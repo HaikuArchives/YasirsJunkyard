@@ -86,7 +86,7 @@ status_t Bitmap2PalmAlbum( BPositionIO *instream, BPositionIO *outstream )
 	 *  non documented, and it probertly only works on BeFS volumes.
 	 */
 
-	char dstname[32];
+	char dstname[B_FILE_NAME_LENGTH];
 
 	if( dynamic_cast<BFile*>(outstream) != NULL )
 	{
@@ -95,9 +95,7 @@ status_t Bitmap2PalmAlbum( BPositionIO *instream, BPositionIO *outstream )
 		if( namelen > 0 )
 		{
 			dstname[namelen] = 0;
-			char *ext = strstr( dstname, ".prc" );
-			if( ext ) *ext = 0;
-			ext = strstr( dstname, ".PRC" );
+			char *ext = strrchr( dstname, '.' );
 			if( ext ) *ext = 0;
 		}
 	}
@@ -228,7 +226,8 @@ status_t Bitmap2PalmAlbum( BPositionIO *instream, BPositionIO *outstream )
 		dbi.backupDate = dbi.createDate;
 		dbi.index = 0;
 		memset( dbi.name, 0, sizeof(dbi.name) );
-		strcpy( dbi.name, dstname );
+		strncpy( dbi.name, dstname, 32 );
+		dbi.name[31] = 0;
 	
 		struct pi_file *pifile = pi_file_create( (char*)tmpfilename, &dbi );
 		pi_file_append_resource( pifile, (void*)"\0\0\0\0\0\0\0\0\0\0\0\0", 12, 'Pref', 1100 );

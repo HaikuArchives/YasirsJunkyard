@@ -35,7 +35,7 @@
 //-------------------------------------
 //-----------------------------------------------------------------------------
 
-#define PALMALBUM_TYPE 'ATGC'
+#define PALMALBUM_TYPE 'PATG'
 #define PALMALBUM_MIME "image/x-albumtogo"
 
 #define PALMALBUM_CFGFILE "PalmAlbumTranslator_Settings"

@@ -11,12 +11,17 @@ makepage( "HSIRaw Translator", "
 <!-- ======================================================================= -->
 " . makesubheading( "Description", "
 
-A Translator that can read and write the AlbumToGo color image format.<br>
-AlbumToGo is a smple image viewer that comes with the Palm IIIc.
+A Translator that can read and write
+<a href=\"http://www.clubphoto.com/\">Club Photo, Inc.</a>'s
+<a href=\"http://www.clubphoto.com/tools/atg.php\">AlbumToGo</a> color image's for the
+<a href=\"http://www.palm.com/\">Palm</a> <a href=\"http://www.palm.com/products/palmiiic/index.html\">IIIc</a>.
 
 ") . "
 <!-- ======================================================================= -->
 " . makesubheading( "Installation", "
+
+Before you can use, or even install, this Translator you must download and install
+<a href=\"http://www.bebits.com/app/122\">PilotLink</a>.<br><br>
 
 The translator has a buildin installer, so just dobbelt-click on the
 <i>PalmAlbumTranslator</i> file.<br>
@@ -37,6 +42,16 @@ Ths current version is not configurable...
 <table border=0>
 <tr valign=top><td>0.1.0 :</td><td>First version.</td></tr>
 </table>
+
+") . "
+<!-- ======================================================================= -->
+" . makesubheading( "To do:", "
+
+Replace the color quantiziser/dithering code (the current one is far from perfect).<br><br>
+
+Add support for 
+<a href=\"http://www.clubphoto.com/\">Club Photo, Inc.</a>'s
+grayscale image format.<br><br>
 
 ") . "
 <!-- ======================================================================= -->

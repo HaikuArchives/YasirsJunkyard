@@ -186,11 +186,11 @@ ConfigView::ConfigView() :
 			sv->SetFont( be_bold_font );
 			vs->AddObject( sv, 1.0f );
 	
-			BString version; version<<"Palm AlbumToGo image translator v"<<(int32)VERSION_MAJOR<<"."<<(int32)VERSION_MINOR<<"."<<(int32)VERSION_REVISION<<"  "<<__DATE__;
+			BString version; version<<"Palm AlbumToGo translator v"<<(int32)VERSION_MAJOR<<"."<<(int32)VERSION_MINOR<<"."<<(int32)VERSION_REVISION<<"  "<<__DATE__;
 			sv = new damn::BStringView( "version", version.String() );
 			vs->AddObject( sv, 1.0f );
 	
-			sv = new damn::BStringView( "copyright", B_UTF8_COPYRIGHT "'2000 by Jesper Hansen (jesper@funcom.com)" );
+			sv = new damn::BStringView( "copyright", B_UTF8_COPYRIGHT "2000 by Jesper Hansen (jesper@funcom.com)" );
 			vs->AddObject( sv, 1.0f );
 	
 			sp = new damn::Space();
@@ -203,13 +203,19 @@ ConfigView::ConfigView() :
 			sp = new damn::Space();
 			vs->AddObject( sp, 5.0f );
 	
-			fRegMimeButton = new damn::BButton( "regmime", "Register mimetype", new BMessage('regm') );
-			vs->AddObject( fRegMimeButton, 0.5f );
+			damn::HSplit *hs2 = new damn::HSplit( 0 );
+				sp = new damn::HSpace();
+				hs2->AddObject( sp, 1.0f );
+				fRegMimeButton = new damn::BButton( "regmime", "Register mimetype", new BMessage('regm') );
+				hs2->AddObject( fRegMimeButton, 0.0f );
+				sp = new damn::HSpace();
+				hs2->AddObject( sp, 1.0f );
+			vs->AddObject( hs2, 1.0f );
 	
 			sp = new damn::Space();
 			vs->AddObject( sp, 5.0f );
 	
-			damn::HSplit *hs2 = new damn::HSplit( 0 );
+			hs2 = new damn::HSplit( 0 );
 				sp = new damn::HSpace();
 				hs2->AddObject( sp, 1.0f );
 	//			sv = new damn::BStringView( "gpl", "Released under the GPL" );

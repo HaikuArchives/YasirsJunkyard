@@ -1,21 +1,26 @@
 cd /junkyard/translators/palmalbum ; . ../../setupenv.sh
 --------------------------------------------------------------------------------
-export PALMALBUM_TRANSLATOR_DEBUG=yep
 bake install
 --------------------------------------------------------------------------------
-bake install && ShowImage testimages/1_31
+bake install && ShowImage examples/www.anarchyonline.com_1.pdb 
 DataTranslations &
 --------------------------------------------------------------------------------
+export PALMALBUM_TRANSLATOR_DEBUG=yep
+export CPLUS_INCLUDE_PATH=/boot/home/Apps/PilotLink090_x86/src/include:$CPLUS_INCLUDE_PATH
+export BELIBRARIES=/boot/home/Apps/PilotLink090_x86/lib:$BELIBRARIES
+--------------------------------------------------------------------------------
 translate --list
-translate '/boot/home/Graphics/Screenshots/Windows Bugs/Write Failed.png' /tmp/delme bits
-translate ~/BitmapClip /tmp/delme bits
-translate /tmp/delme /tmp/delme.3.prc ATGC
-ShowImage /tmp/delme.3.prc
-pilot-xfer -i /tmp/delme.3.prc
+translate examples/introscreen6.jpg /tmp/delme bits && translate /tmp/delme "examples/www.anarchyonline.com_1.pdb" ATGC
+translate examples/shot31b.jpg /tmp/delme bits && translate /tmp/delme "examples/www.anarchyonline.com_2.pdb" ATGC
+translate examples/shot36b.jpg /tmp/delme bits && translate /tmp/delme "examples/www.anarchyonline.com_3.pdb" ATGC
+translate examples/shot37b.jpg /tmp/delme bits && translate /tmp/delme "examples/www.anarchyonline.com_4.pdb" ATGC
+translate examples/shot39b.jpg /tmp/delme bits && translate /tmp/delme "examples/www.anarchyonline.com_5.pdb" ATGC
+tar cvfz examples/images.tgz examples/*.pdb
 --------------------------------------------------------------------------------
 export PILOTPORT=/dev/ports/serial2
 export PILOTRATE=115200
-
+pilot-xfer -i examples/*.pdb
+--------------------------------------------------------------------------------
 rm -r ../../build #clean
 bake --depends install
 --------------------------------------------------------------------------------
@@ -29,5 +34,5 @@ anonymous
 jesper@funcom.com
 cd incoming
 dir
-put _x86.zip
+put PalmAlbum_0.1.0_x86.zip
 EOF
