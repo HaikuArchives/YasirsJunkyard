@@ -1,0 +1,9 @@
+%gfx.a == %gfx.sm +inc_sp=(../../common) +optimize=3 :a
+%gfx_dbg.a == %gfx.sm +inc_sp=(../../common) +debug :a
+
+%gfx.sm == <<
+	BitmapScale.cpp
+	BitmapConvert.cpp
+	ColorQuant.cpp
+	TranslatorUtils.cpp
+	WriteGifImage.cpp

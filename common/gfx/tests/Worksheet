@@ -1,0 +1,12 @@
+cd /junkyard/common/dle/tests
+--------------------------------------------------------------------------------
+odin "%ColorQuantTest > /tmp/cqt"
+/tmp/cqt 16 6 ~/Graphics/Backdrops/BugLord1280.jpg /tmp/cqt.out.jpg
+ShowImage /tmp/cqt.out.jpg
+--------------------------------------------------------------------------------
+odin %ScaleTest!
+--------------------------------------------------------------------------------
+odin "%WriteGifTest > /tmp/wgt"
+/tmp/wgt /tmp/wgt.out.gif
+NetPositive /tmp/wgt.out.gif
+--------------------------------------------------------------------------------

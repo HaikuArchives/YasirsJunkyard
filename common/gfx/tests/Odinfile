@@ -1,0 +1,23 @@
+%all! == <<
+	%ColorQuantTest
+	%ScaleTest
+	%WriteGifTest
+
+%ColorQuantTest == ColorQuantTest.cpp \
+	+inc_sp=(../..) \
+	+lib=(..%gfx.a) -lbe -ltranslation \
+	+optimize=3 \
+	:exe
+
+%ScaleTest == ScaleTest.cpp \
+	+inc_sp=(../..) \
+	+lib=(..%gfx.a) -lbe -ltranslation \
+	+optimize=3 \
+	:exe
+
+%WriteGifTest == WriteGifTest.cpp \
+	+inc_sp=(../..) \
+	+lib=(..%gfx.a) -lbe -ltranslation \
+	+optimize=3 \
+	:exe
+

@@ -67,7 +67,7 @@ void BitmapScaleView::Draw( BRect updaterect )
 //	filter_filter filter_box filter_triangle filter_bell filter_bspline filter_lanczos3 filter_mitchell
 
 	BBitmap destbitmap( Bounds(), B_RGB32 );
-	Scale( fBitmap, &destbitmap, filter_lanczos3 );
+	Scale( fBitmap, &destbitmap, damn::filter_lanczos3 );
 	DrawBitmap( &destbitmap );//, destbitmap.Bounds(), Bounds() );
 }
 

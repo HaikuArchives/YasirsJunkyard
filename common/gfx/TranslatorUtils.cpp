@@ -29,6 +29,7 @@
 #include <assert.h>
 //-------------------------------------
 #include <app/Message.h>
+#include <support/ByteOrder.h>
 #include <translation/TranslatorRoster.h>
 //-------------------------------------
 #include "TranslatorUtils.h"

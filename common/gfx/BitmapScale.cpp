@@ -33,6 +33,9 @@
 #include <interface/Bitmap.h>
 #include <support/SupportDefs.h>
 //-------------------------------------
+#include "misc/AutoPtr.h"
+
+
 #include "BitmapScale.h"
 //-----------------------------------------------------------------------------
 
@@ -147,7 +150,11 @@ static contriblist *CalcFilterWeight( float scale, float filterwidth, int srcsiz
  *
  * \bug Scaling up with the point filter does not work.
  */
-void damn::Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscale_filtertype filtertype, float filterwidth )
+void damn::Scale(
+	const BBitmap *srcbitmap,
+	BBitmap *dstbitmap,
+	damn::bitmapscale_filtertype filtertype, float filterwidth,
+	ScaleProgress *callback, void *callback_data )
 {
 	assert( dstbitmap != NULL );
 	assert( srcbitmap != NULL );
@@ -156,16 +163,52 @@ void damn::Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscal
 	assert( (dstbitmap->ColorSpace()==B_RGB32) || (dstbitmap->ColorSpace()==B_RGBA32) );
 
 	Scale(
-		(const uint32*)srcbitmap->Bits(), srcbitmap->Bounds().IntegerWidth()+1, srcbitmap->Bounds().IntegerHeight()+1, srcbitmap->BytesPerRow(),
-		(uint32*)dstbitmap->Bits(), dstbitmap->Bounds().IntegerWidth()+1, dstbitmap->Bounds().IntegerHeight()+1, dstbitmap->BytesPerRow(),
-		filtertype, filterwidth );
+		(const uint32*)srcbitmap->Bits(), srcbitmap->Bounds().IntegerWidth()+1, srcbitmap->Bounds().IntegerHeight()+1, srcbitmap->BytesPerRow()/4,
+		(uint32*)dstbitmap->Bits(), dstbitmap->Bounds().IntegerWidth()+1, dstbitmap->Bounds().IntegerHeight()+1, dstbitmap->BytesPerRow()/4,
+		filtertype, filterwidth,
+		callback, callback_data );
 }
+
+void damn::Scale(
+	const BBitmap *srcbitmap, const BRect &srcrect,
+	BBitmap *dstbitmap,
+	damn::bitmapscale_filtertype filtertype, float filterwidth,
+	ScaleProgress *callback, void *callback_data )
+{
+	assert( dstbitmap != NULL );
+	assert( srcbitmap != NULL );
+
+	assert( (srcbitmap->ColorSpace()==B_RGB32) || (srcbitmap->ColorSpace()==B_RGBA32) );
+	assert( (dstbitmap->ColorSpace()==B_RGB32) || (dstbitmap->ColorSpace()==B_RGBA32) );
+
+	assert( srcbitmap->Bounds().Contains(srcrect) );
+	int left = int(srcrect.left);
+	int right = int(srcrect.right);
+	int top = int(srcrect.top);
+	int bottom = int(srcrect.bottom);
+
+	Scale(
+		(const uint32*)((uint8*)(srcbitmap->Bits()) + left*4+top*srcbitmap->BytesPerRow()),
+		(right-left)+1,
+		(bottom-top)+1,
+		srcbitmap->BytesPerRow()/4,
+
+		(uint32*)dstbitmap->Bits(),
+		dstbitmap->Bounds().IntegerWidth()+1,
+		dstbitmap->Bounds().IntegerHeight()+1,
+		dstbitmap->BytesPerRow()/4,
+
+		filtertype, filterwidth,
+		
+		callback, callback_data );
+}
+
 
 void damn::Scale(
 	const uint32 *srcbits, int srcwidth, int srcheight, int srcppr,
 	uint32 *dstbits, int dstwidth, int dstheight, int dstppr,
-	damn::bitmapscale_filtertype filtertype,
-	float filterwidth )
+	damn::bitmapscale_filtertype filtertype, float filterwidth,
+	ScaleProgress *callback, void *callback_data )
 {
 	assert( dstbits != NULL );
 	assert( srcbits != NULL );
@@ -201,7 +244,7 @@ void damn::Scale(
 	int tmpwidth  = dstwidth;
 	int tmpheight = srcheight;
 
-	uint32 *tmpbits = new uint32[tmpwidth*tmpheight];
+	damn::AutoArray<uint32> tmpbits( tmpwidth*tmpheight );
 
 	int tmpppr = tmpwidth;
 
@@ -209,7 +252,10 @@ void damn::Scale(
 	float yscale = float(dstheight) / float(srcheight);
 
 //--
-	contriblist *contriblists = CalcFilterWeight( xscale, filterwidth, srcwidth, dstwidth, filterfunc );
+	damn::AutoArray<contriblist> contriblists = CalcFilterWeight( xscale, filterwidth, srcwidth, dstwidth, filterfunc );
+
+	if( callback && callback(0, 0, tmpheight, callback_data) )
+		return;
 
 	for( int iy=0; iy<tmpheight; iy++ )
 	{
@@ -241,15 +287,22 @@ void damn::Scale(
 			aweight = clamp(aweight>>16,0,255);
 			dst_bits[ ix ] = (rweight) | (gweight<<8) | (bweight<<16) | (aweight<<24) ;
 		}
+
+		if( callback && callback(0, iy+1, tmpheight, callback_data) )
+			return;
 	}
 
-	delete[] contriblists;
+	contriblists = NULL;
 //--
 
 	contriblists = CalcFilterWeight( yscale, filterwidth, srcheight, dstheight, filterfunc );
 
 	// help cache coherency:
-	uint32 *bitmaprow = new uint32[ tmpheight ];
+	damn::AutoArray<uint32> bitmaprow( tmpheight );
+
+	if( callback && callback(1, 0, dstwidth, callback_data) )
+		return;
+
 	for( int ix=0; ix<dstwidth; ix++ )
 	{
 		for( int iy=0; iy<tmpheight; iy++ )
@@ -279,12 +332,11 @@ void damn::Scale(
 			bweight = clamp(bweight>>16,0,255);
 			aweight = clamp(aweight>>16,0,255);
 			dstbits[ ix + iy*dstppr ] = (rweight) | (gweight<<8) | (bweight<<16) | (aweight<<24) ;
-	}
-	}
+		}
 
-	delete[] bitmaprow;
-	delete[] contriblists;
-	delete[] tmpbits;
+		if( callback && callback(1, ix+1, dstwidth, callback_data) )
+			return;
+	}
 }
 
 //-----------------------------------------------------------------------------

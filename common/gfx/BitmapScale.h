@@ -63,13 +63,26 @@ namespace damn
 		filter_filter,
 		filter_lanczos3,	///< Lanczos3
 	};
+	
+	typedef bool (ScaleProgress)( int step, int progress, int total, void *user );
 
-	void Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscale_filtertype filtertype, float filterwidth=0.0f );
+	void Scale(
+		const BBitmap *srcbitmap,
+		BBitmap *dstbitmap,
+		damn::bitmapscale_filtertype filtertype, float filterwidth=0.0f,
+		ScaleProgress *callback=NULL, void *callback_data=NULL );
+
+	void Scale(
+		const BBitmap *srcbitmap, const BRect &srcrect,
+		BBitmap *dstbitmap,
+		damn::bitmapscale_filtertype filtertype, float filterwidth=0.0f,
+		ScaleProgress *callback=NULL, void *callback_data=NULL );
+
 	void Scale(
 		const uint32 *srcbits, int srcwidth, int srcheight, int srcppr,
 		uint32 *dstbits, int dstwidth, int dstheight, int dstppr,
-		damn::bitmapscale_filtertype filtertype,
-		float filterwidth=0.0f );
+		damn::bitmapscale_filtertype filtertype, float filterwidth=0.0f,
+		ScaleProgress *callback=NULL, void *callback_data=NULL );
 }
 
 //-----------------------------------------------------------------------------
