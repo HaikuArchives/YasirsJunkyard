@@ -9,5 +9,11 @@ export CVS_RSH=sfssh
 bake php.zip
 dir -al ../build/BeOS-BePC/beos_intel_gnupro/documentation/php.zip
 sfscp ../build/BeOS-BePC/beos_intel_gnupro/documentation/php.zip yasir@yasirsjunkyard.sourceforge.net:/home/groups/yasirsjunkyard/htdocs
-sfssh yasirsjunkyard.sourceforge.net "cd /home/groups/yasirsjunkyard/htdocs && rm index.php && unzip php.zip"
+sfssh yasirsjunkyard.sourceforge.net "cd /home/groups/yasirsjunkyard/htdocs && rm index.* && unzip php.zip"
+---------------------------------------------------------------------------------
+export CVS_RSH=sfssh
+bake html.zip
+dir -al ../build/BeOS-BePC/beos_intel_gnupro/documentation/*.zip
+sfscp ../build/BeOS-BePC/beos_intel_gnupro/documentation/html.zip yasir@yasirsjunkyard.sourceforge.net:/home/groups/yasirsjunkyard/htdocs
+sfssh yasirsjunkyard.sourceforge.net "cd /home/groups/yasirsjunkyard/htdocs && rm index.{html,php3} ; unzip -o html.zip"
 ---------------------------------------------------------------------------------

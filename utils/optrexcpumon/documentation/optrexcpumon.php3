@@ -5,17 +5,9 @@ include( "common.php3" );
 function screenshot( $image, $title )
 {
 	return "<p>
-		<table cols=1 cellspacing=0 border=2>
-			<tr>
-				<td>
-					<img border=4 src=$image>
-				</td>
-			</tr>
-			<tr>
-				<td align=center>
-					$title
-				</td>
-			</tr>
+		<table cellspacing=0 border=2>
+			<tr><td><img border=4 src=$image></td></tr>
+			<tr><td align=center>$title</td></tr>
 		</table>
 		</p>";
 }

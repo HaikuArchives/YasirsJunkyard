@@ -147,7 +147,7 @@ function makepage( $title, $page )
 	global $ext;
 ?>
 <html><head>
-<title>Yasir's Junkyard - $title</title>
+<title>Yasir's Junkyard - <?echo $title?></title>
 </head>
 
 <!-- I totaly lack html design knowlegde, so the menulook is ripped from the BeNews site... -->
@@ -175,8 +175,8 @@ function makepage( $title, $page )
 	</td></tr>
 
 	<tr valign=top>
-		<td width=180 nowrap rowspan=40>
-			<table width=180 cellspacing=0 border=0 cellpadding=0>
+		<td width=100 nowrap rowspan=99>
+			<table width=100 cellspacing=0 border=0 cellpadding=0>
 			
 				<?addtophead( "Junkyard" )?>
 					<?addsubentry( "Index", "index" )?>
