@@ -1,0 +1,8 @@
+gendoc ::
+	(
+		ssc_doc.html^htmldoc:
+	)
+{
+	<<<
+	>>>
+}

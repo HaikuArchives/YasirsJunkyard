@@ -1,0 +1,58 @@
+VERSION_MAJOR		= 0
+VERSION_MINOR		= 5
+VERSION_REVISION	= 0
+
+DEFINES	+= VERSION_MAJOR=$(VERSION_MAJOR)
+DEFINES	+= VERSION_MINOR=$(VERSION_MINOR)
+DEFINES	+= VERSION_REVISION=$(VERSION_REVISION)
+
+DISTNAME = SuperSmartCard_$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_REVISION)
+# CPU should be set using uname
+CPU = x86
+BINARC = $(DISTNAME)_$(CPU).zip
+SRCARC = $(DISTNAME)_src.zip
+
+bin/ssc -> kerneldriver:
+	[
+		driver.c^object:nopic
+		ssc.c^object:nopic
+		ssc_boot.c^object:nopic
+		utils.c^object:nopic
+	]
+{
+}
+
+install ::
+	(
+		bin/ssc^kerneldriver:
+	)
+{
+	<<<
+ 		cp $(_builddir_)/bin/ssc /boot/home/config/add-ons/kernel/drivers/bin
+		mkdir -p /boot/home/config/add-ons/kernel/drivers/dev/misc
+		ln -sf ../../bin/ssc /boot/home/config/add-ons/kernel/drivers/dev/misc
+		rescan ssc
+	>>>
+}
+
+binarc ::
+	(
+		bin/ssc^kerneldriver:
+		kerneldrivers/supersmartcard/documentation/gendoc
+	)
+{
+	<<<
+		sh -c "\
+			mkdir -p $(DISTNAME) ; \
+	 		copyattr -d $(_builddir_)/bin/ssc $(DISTNAME) && \
+	 		copyattr -d $(_builddir_)/documentation/* $(DISTNAME) && \
+	 		copyattr -d $(_sourcedir_)/install.sh $(DISTNAME) && \
+			echo $(_sourcedir_) && \
+	 		mimeset -F $(DISTNAME) && \
+	 		rm $(BINARC) >/dev/null 2>&1 ; \
+	 		zip -9r $(BINARC) $(DISTNAME) && \
+	 		rm $(DISTNAME)/* && \
+	 		rmdir $(DISTNAME)"
+	>>>
+}
+

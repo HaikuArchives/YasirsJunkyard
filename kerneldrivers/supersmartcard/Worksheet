@@ -1,0 +1,10 @@
+cd /junkyard/kerneldrivers/supersmartcard/ ; . ../../setupenv.sh
+--------------------------------------------------------------------------------
+rm -rfv ../../build #clean
+bake bin/ssc | sed "s/.boot.home.Projects.SourceForge.yasirsjunkyard.kerneldrivers.supersmartcard.//"
+bake install | sed "s/.boot.home.Projects.SourceForge.yasirsjunkyard.kerneldrivers.supersmartcard.//"
+--------------------------------------------------------------------------------
+bake binarc
+--------------------------------------------------------------------------------
+
+
