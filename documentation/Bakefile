@@ -1,0 +1,126 @@
+html.zip -> htmldoczip:
+	[
+		index.html^html:
+		bake.html^html:
+		yasirsjunkyard2.gif
+		
+		Main.png^image:png
+		Bake.png^image:png
+		Translators.png^image:png
+		AmigaIcon.png^image:png
+		HsiRaw.png^image:png
+		KernelDrivers.png^image:png
+		Optrex.png^image:png
+		W8378x.png^image:png
+		Utils.png^image:png
+		OptrexCPUMon.png^image:png
+
+		../translators/amigaicon/documentation/amigaicon.html^html:
+		../translators/amigaicon/documentation/amigaiconconfig.png
+
+		../translators/hsiraw/documentation/hsiraw.html^html:
+		../translators/hsiraw/documentation/hsirawconfig.png
+
+		../kerneldrivers/optrex/documentation/optrex.html^html:
+		../kerneldrivers/optrex/documentation/^image:jpeg
+
+		../kerneldrivers/w8378x/documentation/w8378x.html^html:
+		../kerneldrivers/w8378x/documentation/^image:jpeg
+
+		../utils/optrexcpumon/documentation/optrexcpumon.html^html:
+		../utils/optrexcpumon/documentation/^image:jpeg
+	]
+{
+}
+
+php.zip -> phpdoczip:
+	[
+		common.php3
+		webcommon.php3
+
+		index.php3
+		bake.php3
+		yasirsjunkyard2.gif
+
+		Main.png^image:png
+		Bake.png^image:png
+		Translators.png^image:png
+		AmigaIcon.png^image:png
+		HsiRaw.png^image:png
+		KernelDrivers.png^image:png
+		Optrex.png^image:png
+		W8378x.png^image:png
+		Utils.png^image:png
+		OptrexCPUMon.png^image:png
+
+		../translators/amigaicon/documentation/amigaicon.php3
+		../translators/amigaicon/documentation/amigaiconconfig.png
+
+		../translators/hsiraw/documentation/hsiraw.php3
+		../translators/hsiraw/documentation/hsirawconfig.png
+
+		../kerneldrivers/optrex/documentation/optrex.php3
+		../kerneldrivers/optrex/documentation/^image:jpeg
+
+		../kerneldrivers/w8378x/documentation/w8378x.php3
+		../kerneldrivers/w8378x/documentation/^image:jpeg
+
+		../utils/optrexcpumon/documentation/optrexcpumon.php3
+		../utils/optrexcpumon/documentation/^image:jpeg
+	]
+{
+}
+
+Main.png -> image:png [ leftbar.gic ] { STRING = Main
+}
+Bake.png -> image:png [ leftbar.gic ] { STRING = Bake
+}
+
+Translators.png -> image:png [ leftbar.gic ] { STRING=Translators
+}
+AmigaIcon.png -> image:png [ leftbar.gic ] { STRING = AmigaIcon
+}
+HsiRaw.png -> image:png [ leftbar.gic ] { STRING = HsiRaw
+}
+
+KernelDrivers.png -> image:png [ leftbar.gic ] { STRING = KernelDrivers
+}
+Optrex.png -> image:png [ leftbar.gic ] { STRING = Optrex
+}
+W8378x.png -> image:png [ leftbar.gic ] { STRING = W8378x
+}
+
+Utils.png -> image:png [ leftbar.gic ] { STRING = Utils
+}
+OptrexCPUMon.png -> image:png [ leftbar.gic ] { STRING = OptrexCPUMon
+}
+
+
+readhtml ::
+	(
+		html.zip^htmldoczip:
+	)
+{
+	<<<
+		mkdir -p /tmp/junkyardhtml
+		unzip -oq $(_builddir_)/html.zip -d /tmp/junkyardhtml
+		/system/Tracker /tmp/junkyardhtml/index.html
+	>>>
+}
+
+testphpdoc ::
+	(
+		php.zip^phpdoczip:
+	)
+{
+	<<<
+		sh -c " \
+			cd /boot/home/public_html/c2i/html/php && \
+			unzip -o $(_builddir_)/php.zip && \
+			cvs add * ; \
+			cvs commit -m \"\" && \
+			dir -al"
+	>>>
+}
+
+#		dir -al 
