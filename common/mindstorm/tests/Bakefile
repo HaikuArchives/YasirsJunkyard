@@ -1,0 +1,26 @@
+all -> dummy:
+	[
+		bin/batterylevel^executable:
+		bin/sendmessage^executable:
+	]
+{
+}
+
+bin/sendmessage -> executable:
+	[
+		sendmessage.cpp^object:static
+		../lib/libmindstorm.a
+	]
+{
+	LDFLAGS += -ldevice
+}
+
+bin/batterylevel -> executable:
+	[
+		batterylevel.cpp^object:static
+		../lib/libmindstorm.a
+	]
+{
+	LDFLAGS += -ldevice
+}
+

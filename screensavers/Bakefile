@@ -1,0 +1,33 @@
+bin/Feedback -> executable:
+	[
+		Main.cpp^object:static
+		Saver.cpp^object:static
+		Feedback.cpp^object:static
+		YUV2RGB.cpp^object:static
+		FeedbackWinScr.cpp^object:static
+		YUV2RGB_1632.cpp^object:static
+#		SSApp.cpp^object:static
+#		SSWin.cpp^object:static
+#		BitmapView.cpp^object:static
+		
+#		../../common/dle/lib/liblayoutengine.a
+#		../../common/misc/lib/libmisc.a
+
+#		SimpleSlideX86.rsrc
+	]
+	(
+	)
+{
+	LDFLAGS += -lbe	 -lscreensaver -lgame
+}
+
+install ::
+	(
+		bin/Feedback^executable:
+		addon/SimpleSlide^executable:
+	)
+{
+	<<<
+		copyattr -d $(_builddir_)/bin/Feedback "/boot/home/config/add-ons/Screen Savers"
+	>>>
+}

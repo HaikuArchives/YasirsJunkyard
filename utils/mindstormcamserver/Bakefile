@@ -1,0 +1,12 @@
+c_scanner += /becpia
+
+bin/MindstormCamServer -> executable:
+	[
+		MindstormCamServer.cpp^object:static
+		/common/httpserver/lib/libhttpserver.a
+		/common/mindstorm/lib/libmindstorm.a
+	]
+{
+	LDFLAGS += -lbe -lnetapi -ltranslation -ldevice /becpia/libcpiacam/obj.x86/libcpiacam.a
+}
+

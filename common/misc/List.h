@@ -48,8 +48,8 @@ namespace damn
 		List<T>	&operator=(const List<T> &from)						{ return	fList=from; }
 	
 		// Adding and removing items.
-		bool	AddItem(T *item)									{ return	fList.AddItem(item); }
-		bool	AddItem(T *item, int32 atIndex)						{ return	fList.AddItem(item,atIndex); }
+		bool	AddItem(T *item)									{ return	fList.AddItem((void*)item); }
+		bool	AddItem(T *item, int32 atIndex)						{ return	fList.AddItem((void*)item,atIndex); }
 		bool	AddList(List<T> *newItems)							{ return	fList.AddList(newItems); }
 		bool	AddList(List<T> *newItems, int32 atIndex)			{ return	fList.AddList(newItems,atIndex); }
 		bool	RemoveItem(T *item)									{ return	fList.RemoveItem(item); }

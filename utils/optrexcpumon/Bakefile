@@ -9,3 +9,13 @@ bin/optrexcpumon -> executable:
 {
 	LDFLAGS += -lbe
 }
+
+install ::
+	(
+		bin/optrexcpumon^executable:
+	)
+{
+	<<<
+ 		copyattr -d $(_builddir_)/bin/optrexcpumon /boot/home/config/bin
+	>>>
+}

@@ -118,6 +118,8 @@ namespace damn
 				void		SendDataBlock( const void *data, size_t size );
 	
 				void		SendError( int errorno, const char *string=NULL );
+
+				void		SendRedirection( const char *newurl, bool permanent=false );
 	
 	private:
 							~Connection();

@@ -13,6 +13,9 @@ all -> dummy:
 
 		common/httpserver/lib/libhttpserver.a
 		common/httpserver/tests/all^dummy:
+
+		common/mindstorm/lib/libmindstorm.a
+		common/mindstorm/tests/all^dummy:
 		
 		translators/hsiraw/bin/HSIRawTranslator^executable:
 		translators/amigaicon/bin/AmigaIconTranslator^executable:
@@ -43,6 +46,8 @@ install ::
 
 		kerneldrivers/w8378x/install
 		kerneldrivers/optrex/install
+
+		utils/optrexcpumon/install
 	)
 {
 	<<<

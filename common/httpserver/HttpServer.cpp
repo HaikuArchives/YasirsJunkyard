@@ -522,6 +522,34 @@ void damn::HttpServer::Connection::SendError( int errorno, const char *string )
 	fEndpoint.SendData( content.String(), content.Length() );
 }
 
+void damn::HttpServer::Connection::SendRedirection( const char *newurl, bool permanent )
+{
+	int errorno = permanent ? HTTP_ERR_MOVED_PERMANENTLY : HTTP_ERR_MOVED_TEMPORARILY;
+
+	BString content;
+	content << "<html>\n";
+	content << "<head><title>" << (int32)errorno << " Moved</title></head>\n";
+	content << "<body><h2>";
+	content << (int32)errorno << " Moved<br>";
+	content << "You can find it <a href=\"" << newurl << "\">here</a>.";
+	content << "</h2></body>\n";
+	content << "</html>\n";
+	
+	if( fMajorVersion>=0 && fMinorVersion>=0 )
+	{
+		BString header;
+		header << "HTTP/1.0 " << (int32)errorno << " " << "Moved\n";
+		header << "Content-Type: text/html\n";
+		header << "Location: " << newurl << "\n";
+		header << "Content-Length: " << content.Length() << "\n";
+		header << "Connection: " << ((fKeepAlive)?"Keep-Alive":"Close") << "\n";
+		header << "\n";
+		fEndpoint.SendData( header.String(), header.Length() );
+	}
+
+	fEndpoint.SendData( content.String(), content.Length() );
+}
+
 //------------------------------------------------------------------------------
 
 

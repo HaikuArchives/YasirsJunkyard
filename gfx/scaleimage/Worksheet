@@ -1,0 +1,17 @@
+cd /junkyard/gfx/scaleimage ; . ../../setupenv.sh
+--------------------------------------------------------------------------------
+rm -rfv ../../build #clean
+bake bin/scaleimage
+bake install
+--------------------------------------------------------------------------------
+SCALEIMAGEBIN=../../build/BeOS-BePC/beos_intel_gnupro/gfx/scaleimage/bin/scaleimage
+SRCIMG=~/screen1.tga
+SRCIMG=/tmp/junkyardhtml/HsiRaw.png 
+
+for filter in point box triangle bell bspline catrom gaussian sinc bessel mitchell hanning hamming blackman kaiser normal filter lanczos3 ; do
+echo $filter
+$SCALEIMAGEBIN --xsize=$((1280/2)) --ysize=$((1024/2)) --outformat='PNG ' --filter=$filter $SRCIMG /tmp/$filter.png
+done
+
+SimpleSlide /tmp/*.png
+--------------------------------------------------------------------------------

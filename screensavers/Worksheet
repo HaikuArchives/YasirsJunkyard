@@ -1,0 +1,8 @@
+cd /junkyard/screensavers ; . ../setupenv.sh
+--------------------------------------------------------------------------------
+rm -rfv ../build #clean
+bake install
+--------------------------------------------------------------------------------
+bake install && ../build/BeOS-BePC/beos_intel_gnupro/screensavers/bin/Feedback
+
+
