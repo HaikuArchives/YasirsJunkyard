@@ -27,6 +27,7 @@
 
 //-----------------------------------------------------------------------------
 #include <stdio.h>
+#include <zlib.h>
 //-------------------------------------
 #include <app/Application.h>
 #include <interface/Bitmap.h>
@@ -37,9 +38,11 @@
 #include <translation/BitmapStream.h>
 #include <translation/TranslatorRoster.h>
 //-------------------------------------
+#include "gfx/BitmapScale.h"
 #include "httpserver/HttpServer.h"
 #include "libcpiacam/CPiACam.h"
 #include "mindstorm/RcxComm.h"
+#include "text/Bitmap2Text.h"
 //-----------------------------------------------------------------------------
 
 #define SAVEFRAMES
@@ -256,10 +259,15 @@ void CamApp::ReadyToRun()
 		fCam->GetFirmwareVersion(), fCam->GetFirmwareRevision(),
 		fCam->GetVideoCompressorVersion(), fCam->GetVideoCompressorRevision() );
 	fCam->EnableAutoExposure( true );
-	fCam->SetFrameRate( CPiACam::FRATE_25, CPiACam::FDIV_8 );
+	fCam->SetFrameRate( CPiACam::FRATE_25, CPiACam::FDIV_1 );
+
+#if 0
 	fCam->EnableCompression( CPiACam::COMPRESSION_DISABLED, CPiACam::DECIMATION_OFF );
-//	fCam->SetCompressionTarget( comprressiontarget_t target, int framerate, float quality );
+#else
+	fCam->EnableCompression( CPiACam::COMPRESSION_AUTO, CPiACam::DECIMATION_ON );
+	fCam->SetCompressionTarget( CPiACam::COMPTARGET_QUALITY, 10, 1.0f );
 //	fCam->SetYUVTreshold( float ythreshold, float uvthreshold );
+#endif
 
 	fCam->Unlock();
 
@@ -416,6 +424,9 @@ void CamServer::RequestReceived( Connection *connection )
 {
 	if( connection->GetCommand() == "GET" )
 	{
+		int text_width, text_height, text_compresslevel=0;
+		char text_mode[32] = "";
+		
 		if( connection->GetArg().FindFirst("?pan=") >= 0 )
 		{
 			CamApp *app = (CamApp*)be_app;
@@ -440,6 +451,128 @@ void CamServer::RequestReceived( Connection *connection )
 			connection->SendRedirection( "./", false );
 		}
 //		if( connection->GetArg()=="/" || connection->GetArg()=="/index.html" )
+//		else if( connection->GetArg() == "/text.html" )
+		else if( sscanf(connection->GetArg().String(), "/%8[^_]_%dx%d_%d.html",text_mode,&text_width,&text_height,&text_compresslevel) >= 3 )
+		{
+			if( text_width<4 || text_width>352 || text_height<4 || text_height>240 )
+			{
+				text_width = 60;
+				text_height = 30;
+			}
+			
+			int refresh_time = (text_width*text_height)/1000;
+			if( refresh_time < 1 )
+				refresh_time = 1;
+			
+			if( text_compresslevel<0 || text_compresslevel>9 )
+				text_compresslevel = 0;
+			
+			bool color = true;
+			if( strcmp(text_mode,"bwtext") == 0 )
+				color = false;
+	
+
+			CamApp *app = (CamApp*)be_app;
+			if( app->Lock() )
+			{
+				BBitmap bitmap( BRect(0,0,text_width-1,text_height-1), B_RGB32 );
+				damn::Scale( app->GetBitmap(), &bitmap, damn::filter_lanczos3 );
+				app->Unlock();
+				std::vector<std::vector<damn::colchar_t> > text = damn::Bitmap2Text( &bitmap );
+	
+				BString html;
+				html << "<html>\n";
+				html << "<head>\n";
+				html << "<meta http-equiv=\"refresh\" content=\"" << refresh_time << "\">\n";
+				html << "<meta http-equiv=\"pragma\" content=\"no-cache\">\n";
+				html << "<meta http-equiv=\"cache-control\" content=\"no-cache\">\n";
+				html << "<title>WebCam</title>\n";
+				html << "</head>\n";
+				html << "<body bgcolor=#000000>\n";
+				html << "<center>\n";
+
+				html << "<pre><font size=-2 color=#ffffff>";
+				uint32 lastcol = 0xffffffff;
+				for( int iy=0; iy<text_height; iy++ )
+				{
+					for( int ix=0; ix<text_width; ix++ )
+					{
+						damn::colchar_t cc = text[iy][ix];
+						if( color )
+						{
+							cc.rgbcol.red = (int)(pow(float(cc.rgbcol.red)/256.0f,0.75f)*256.0f);
+							cc.rgbcol.green = (int)(pow(float(cc.rgbcol.green)/256.0f,0.75f)*256.0f);
+							cc.rgbcol.blue = (int)(pow(float(cc.rgbcol.blue)/256.0f,0.75f)*256.0f);
+							cc.rgbcol.red &= 0xf0; cc.rgbcol.red |= cc.rgbcol.red>>4;
+							cc.rgbcol.green &= 0xf0; cc.rgbcol.green |= cc.rgbcol.green>>4;
+							cc.rgbcol.blue &= 0xf0; cc.rgbcol.blue |= cc.rgbcol.blue>>4;
+							uint32 col = cc.rgbcol.red<<16 | cc.rgbcol.green<<8 | cc.rgbcol.blue;
+							if( col != lastcol )
+							{
+								if( lastcol != 0xffffffff )
+									html << "</font>";
+								char hex[7];
+								sprintf( hex, "%02X%02X%02X", cc.rgbcol.red, cc.rgbcol.green, cc.rgbcol.blue );
+								html << "<font color=#" << hex << ">";
+								lastcol = col;
+							}
+						}
+						html << cc.c;
+					}
+					html << "\n";
+				}
+				if( color )
+					html << "</font>";
+				html << "</font></pre>";
+
+				html << "</center>\n";
+				html << "</body>\n";
+				html << "</html>\n";
+
+				if( text_compresslevel )
+				{
+					html = '!';
+#if 1
+					uint8 *compressed = new uint8[10+(html.Length()*101/100+12)+8];
+					uLongf compressed_len;
+					if( compress2((Bytef*)compressed+10,&compressed_len, (Bytef*)html.String(), html.Length(), text_compresslevel) == Z_OK )
+					{
+						compressed[0] = 0x1f; // magic
+						compressed[1] = 0x8b; // magic
+						compressed[2] = 8; // deflate
+						compressed[3] = 0x00; // text file
+						compressed[4] = compressed[5] = compressed[6] = compressed[7] = 0; // modify time
+						compressed[8] = 0; // xflags
+						compressed[9] = 3; // oscode
+
+						uLong crc = crc32( 0L, Z_NULL, 0 );
+						crc = crc32( crc, compressed+10, compressed_len );
+
+						compressed[10+compressed_len+0] = (crc>>0)&0xff;
+						compressed[10+compressed_len+1] = (crc>>8)&0xff;
+						compressed[10+compressed_len+2] = (crc>>16)&0xff;
+						compressed[10+compressed_len+3] = (crc>>24)&0xff;
+						compressed[10+compressed_len+4] = (html.Length()>>0)&0xff;
+						compressed[10+compressed_len+5] = (html.Length()>>8)&0xff;
+						compressed[10+compressed_len+6] = (html.Length()>>16)&0xff;
+						compressed[10+compressed_len+7] = (html.Length()>>24)&0xff;
+					
+						BString xheader = "Content-Encoding: x-gzip\n";
+						connection->SendData( compressed, 10+compressed_len+8, "text/html", &xheader );
+#else
+#endif
+					}
+					else
+						connection->SendData( html.String(), html.Length() );
+					delete compressed;
+				}
+				else
+				{
+					connection->SendData( html.String(), html.Length() );
+				}
+			}
+
+		}
 		else if( connection->GetArg()=="/" || connection->GetArg().FindFirst(".html") >= 0 )
 		{
 			float battery = 0.0f;
@@ -495,7 +628,9 @@ void CamServer::RequestReceived( Connection *connection )
 			html << "<hr>\n";
 
 			html << "RCX Battery: " << battery << "v<br>\n";
-			html << "NQC <a href=camctrl.nqc>Source</a> for the RCX.\n";
+			html << "NQC <a href=camctrl.nqc>Source</a> for the RCX.\n<br>";
+			html << "Text version: <a href=text_60x30.html>60x30</a> <a href=text_78x39.html>78x39</a> <a href=text_120x60.html>120x60</a> <a href=text_176x88.html>176x88</a> <a href=text_352x176.html>352x176</a>\n<br>";
+			html << "BW Text version: <a href=bwtext_60x30.html>60x30</a> <a href=bwtext_78x39.html>78x39</a> <a href=bwtext_120x60.html>120x60</a> <a href=bwtext_176x88.html>176x88</a> <a href=bwtext_352x176.html>352x176</a>\n";
 
 			html << "<hr>\n";
 

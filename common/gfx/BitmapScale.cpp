@@ -29,10 +29,10 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
-
+//-------------------------------------
 #include <interface/Bitmap.h>
 #include <support/SupportDefs.h>
-
+//-------------------------------------
 #include "BitmapScale.h"
 //-----------------------------------------------------------------------------
 
@@ -74,7 +74,7 @@ int clamp( int v, int l, int h ) { return v<l?l:v>h?h:v; }
 
 //-----------------------------------------------------------------------------
 
-contriblist *CalcFilterWeight( float scale, float filterwidth, int srcsize, int dstsize, scale_filterfunc *filterfunc )
+static contriblist *CalcFilterWeight( float scale, float filterwidth, int srcsize, int dstsize, scale_filterfunc *filterfunc )
 {
 	contriblist *contriblists = new contriblist[dstsize];
 
@@ -136,9 +136,18 @@ contriblist *CalcFilterWeight( float scale, float filterwidth, int srcsize, int 
 	return contriblists;
 }
 
-//-----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
-void Scale( BBitmap *srcbitmap, BBitmap *dstbitmap, bitmapscale_filtertype filtertype, float filterwidth )
+/** Compies \a srcbitmap into \a dstbitmap while scaling/filtering it.
+ *
+ * \param srcbitmap Source bitmap, must be in B_RGB32 or B_RGBA32 colorspace.
+ * \param dstbitmap Destination bitmap, must be in B_RGB32 or B_RGBA32 colorspace.
+ * \param filtertype 
+ * \param filterwidth Width of filter, set to 0.0f for default.
+ *
+ * \bug Scaling up with the point filter does not work.
+ */
+void damn::Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscale_filtertype filtertype, float filterwidth )
 {
 	assert( dstbitmap != NULL );
 	assert( srcbitmap != NULL );

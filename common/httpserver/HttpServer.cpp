@@ -452,7 +452,7 @@ void damn::HttpServer::Connection::Loop()
 	}
 }
 
-void damn::HttpServer::Connection::SendData( const void *data, ssize_t size, const char *mimetype )
+void damn::HttpServer::Connection::SendData( const void *data, ssize_t size, const char *mimetype, const BString *extraheader )
 {
 	if( size<0 ) fKeepAlive = false;
 
@@ -466,6 +466,8 @@ void damn::HttpServer::Connection::SendData( const void *data, ssize_t size, con
 		if( mimetype ) header << "Content-Type: " << mimetype << "\n";
 		if( size >= 0 ) header << "Content-Length: " << size << "\n";
 		header << "Connection: " << ((fKeepAlive)?"Keep-Alive":"Close") << "\n";
+		if( extraheader )
+			header << *extraheader;
 		header << "\n";
 		fEndpoint.SendString( header );
 	}

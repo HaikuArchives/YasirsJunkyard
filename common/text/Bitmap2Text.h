@@ -26,45 +26,20 @@
  */
 
 //-----------------------------------------------------------------------------
-#ifndef DAMN_BITMAPSCALE_H
-#define DAMN_BITMAPSCALE_H
+#ifndef DAMN_BITMAP2TEXT_H
+#define DAMN_BITMAP2TEXT_H
 //-----------------------------------------------------------------------------
+#include <vector>
 //-------------------------------------
-#include <interface/Bitmap.h>
-//class BBitmap;
+class BBitmap;
 //-------------------------------------
 //-----------------------------------------------------------------------------
 
-/** Most of the common stuff in the Junkyard is wrappen in this namespace.
- *
- */
 namespace damn
 {
-	/** Filters that works with damn::Scale()
-	 *
-	 */
-	enum bitmapscale_filtertype
-	{
-		filter_point,		///< Point filter
-		filter_box,			///< Box, Pulse, Fourier window, 1st order (constant) b-spline
-		filter_triangle,	///< Triangle, Bartlett window, 2nd order (linear) b-spline
-		filter_bell,		///< 3rd order (quadratic) b-spline
-		filter_bspline,		///< 4th order (cubic) b-spline
-		filter_catrom,		///< Catmull-Rom spline, Overhauser spline
-		filter_gaussian,	///< Gaussian (infinite)
-		filter_sinc,		///< Sinc, perfect lowpass filter (infinite)
-		filter_bessel,		///< Bessel (for circularly symm. 2-d filt, inf)
-		filter_mitchell,	///< Mitchell
-		filter_hanning,		///< Hanning window
-		filter_hamming,		///< Hamming window
-		filter_blackman,	///< Blackman window
-		filter_kaiser,		///< Kaiser window
-		filter_normal,		///< normal(x) = gaussian(x/2)/2
-		filter_filter,		///< Filter
-		filter_lanczos3,	///< Lanczos3
-	};
-
-	void Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscale_filtertype filtertype, float filterwidth=0.0f );
+	struct colchar_t { char c; /*int ansicol;*/ rgb_color rgbcol; };
+//	std::vector<std::vector<colchar_t> > Bitmap2Text( const BBitmap *bitmap, int width, int height );
+	std::vector<std::vector<colchar_t> > Bitmap2Text( const BBitmap *bitmap );
 }
 
 //-----------------------------------------------------------------------------

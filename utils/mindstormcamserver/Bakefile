@@ -5,8 +5,10 @@ bin/MindstormCamServer -> executable:
 		MindstormCamServer.cpp^object:static
 		/common/httpserver/lib/libhttpserver.a
 		/common/mindstorm/lib/libmindstorm.a
+		/common/text/lib/libtext.a
+		/common/gfx/lib/libgfx.a
 	]
 {
-	LDFLAGS += -lbe -lnetapi -ltranslation -ldevice /becpia/libcpiacam/obj.x86/libcpiacam.a
+	LDFLAGS += -lbe -lnetapi -ltranslation -ldevice -lz /becpia/libcpiacam/obj.x86/libcpiacam.a
 }
 

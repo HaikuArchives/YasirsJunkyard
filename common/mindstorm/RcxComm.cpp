@@ -213,7 +213,7 @@ retryheader:
 		}
 		decodelen++;
 		// check checksum:
-		fprintf( stderr, "%d [%02X %02X] [%02X]\n", decodelen, recvbuffer[3+decodelen*2], recvbuffer[3+decodelen*2+1]^0xff, checksum );
+//		fprintf( stderr, "%d [%02X %02X] [%02X]\n", decodelen, recvbuffer[3+decodelen*2], recvbuffer[3+decodelen*2+1]^0xff, checksum );
 		if( recvbuffer[3+decodelen*2]!=(recvbuffer[3+decodelen*2+1]^0xff) || checksum!=recvbuffer[3+decodelen*2] )
 		{
 			// not enough data, or a bad checksum, there is no way to know :(

@@ -112,7 +112,7 @@ namespace damn
 				uint16		GetClientPort() const { return fClientPort; }
 	
 	
-				void		SendData( const void *data, ssize_t size, const char *mimetype=NULL );
+				void		SendData( const void *data, ssize_t size, const char *mimetype=NULL, const BString *extraheader=NULL );
 	
 				void		SendDataHeader( ssize_t size, const char *mimetype=NULL );
 				void		SendDataBlock( const void *data, size_t size );

@@ -1,0 +1,17 @@
+all -> dummy:
+	[
+		bin/Bitmap2Text^executable:
+	]
+{
+}
+
+bin/Bitmap2Text -> executable:
+	[
+		Bitmap2Text.cpp^object:static
+		../../gfx/lib/libgfx.a
+		../lib/libtext.a
+	]
+{
+	LDFLAGS += -lbe -ltranslation
+}
+

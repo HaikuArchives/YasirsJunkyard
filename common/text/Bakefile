@@ -1,0 +1,9 @@
+lib/libtext.a -> library:static
+	[
+		Bitmap2Text.cpp^object:static
+	]
+	(
+	)
+{
+}
+
