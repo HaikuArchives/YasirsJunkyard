@@ -1,4 +1,37 @@
 <?
+
+//$dotimage = imagecreate( 1, 1 );
+
+function makeheading( $width, $link, $alt, $title )
+{
+	global $ext;
+
+	echo "<table cols=3 border=0 cellspacing=0 cellpadding=0 width=100%>",
+		"<tr bgcolor=#636b8c>",
+			"<td width=",$width," height=1></td>",
+			"<td height=1>";
+		
+	if( $link != "" )	echo	"<a href=",$link,".",$ext,">";
+	if( $title != "" )
+	{
+						echo	"<img border=0 src=",$title;
+						if( $alt != "" ) echo " alt=",$alt;
+						echo	">";
+	}
+	if( $link != "" )	echo	"</a>";
+
+	echo	"</td><td width=10 height=1></td></tr><tr width=100%><td bgcolor=#000000 height=1 colspan=3></td>",
+			"</tr></table>\n";
+/*
+	echo "<table cols=3 border=0 cellspacing=0 cellpadding=0 width=100%>",
+		"<tr bgcolor=#636b8c><td width=",$width,"></td><td><font size=+1> <b>",
+		"<a href=",$link,".",$ext,"><font color=#b3bbdc>",$title,"</font></a>",
+		"</b></font></td><td width=10></td></tr>",
+		"<tr><td bgcolor=#000000 height=1 colspan=3></td></tr>",
+		"</table>\n";
+*/
+}
+
 function makepage( $title, $page )
 {
 	global $ext;
@@ -30,35 +63,35 @@ function makepage( $title, $page )
 	</td></tr>
 
 	<tr>
-		<td align=center valign=top bgcolor=#737b9c> <--! bgcolor=#d0d0d0 -->
-			<table cols=1 cellspacing=0>
+		<td align=center valign=top bgcolor=#637b9c>
+			<table cols=1 cellspacing=0 border=0 cellpadding=1>
 
-				<tr><td><?makeheading( 10, "", "" )?></td></tr>
+				<tr><td><?makeheading( 10, "", "", "" )?></td></tr>
 
-				<tr><td><?makeheading( 10, "index", "Main.png" )?></td></tr>
+				<tr><td><?makeheading( 10, "index", "index", "Main.png" )?></td></tr>
 
-				<tr><td><?makeheading( 10, "", "" )?></td></tr>
+				<tr><td><?makeheading( 10, "", "", "" )?></td></tr>
 
-				<tr><td><?makeheading( 10, "", "Translators.png" )?></td></tr>
-				<tr><td><?makeheading( 20, "amigaicon", "AmigaIcon.png" )?></td></tr>
-				<tr><td><?makeheading( 20, "hsiraw", "HsiRaw.png" )?></td></tr>
+				<tr><td><?makeheading( 10, "", "Translators", "Translators.png" )?></td></tr>
+				<tr><td><?makeheading( 20, "amigaicon", "AmigaIcon", "AmigaIcon.png" )?></td></tr>
+				<tr><td><?makeheading( 20, "hsiraw", "HsiRaw", "HsiRaw.png" )?></td></tr>
 
-				<tr><td><?makeheading( 10, "", "" )?></td></tr>
+				<tr><td><?makeheading( 10, "", "", "" )?></td></tr>
 
-				<tr><td><?makeheading( 10, "", "KernelDrivers.png" )?></td></tr>
-				<tr><td><?makeheading( 20, "optrex", "Optrex.png" )?></td></tr>
-				<tr><td><?makeheading( 20, "w8378x", "W8378x.png" )?></td></tr>
+				<tr><td><?makeheading( 10, "", "KernelDrivers", "KernelDrivers.png" )?></td></tr>
+				<tr><td><?makeheading( 20, "optrex", "Optrex", "Optrex.png" )?></td></tr>
+				<tr><td><?makeheading( 20, "w8378x", "W8378x", "W8378x.png" )?></td></tr>
 
-				<tr><td><?makeheading( 10, "", "" )?></td></tr>
+				<tr><td><?makeheading( 10, "", "", "" )?></td></tr>
 
-				<tr><td><?makeheading( 10, "", "Utils.png" )?></td></tr>
-				<tr><td><?makeheading( 20, "optrexcpumon", "OptrexCPUMon.png" )?></td></tr>
+				<tr><td><?makeheading( 10, "", "Utils", "Utils.png" )?></td></tr>
+				<tr><td><?makeheading( 20, "optrexcpumon", "OptrexCPUMon", "OptrexCPUMon.png" )?></td></tr>
 
-				<tr><td><?makeheading( 10, "", "" )?></td></tr>
+				<tr><td><?makeheading( 10, "", "", "" )?></td></tr>
 
-				<tr><td><?makeheading( 10, "bake", "Bake.png" )?></td></tr>
+				<tr><td><?makeheading( 10, "bake", "Bake", "Bake.png" )?></td></tr>
 
-				<tr><td><?makeheading( 10, "", "" )?></td></tr>
+				<tr><td><?makeheading( 10, "", "", "" )?></td></tr>
 				
 				<tr width=100%><td>
 					<center>
