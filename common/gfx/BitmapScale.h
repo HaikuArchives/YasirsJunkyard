@@ -65,6 +65,11 @@ namespace damn
 	};
 
 	void Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscale_filtertype filtertype, float filterwidth=0.0f );
+	void Scale(
+		const uint32 *srcbits, int srcwidth, int srcheight, int srcppr,
+		uint32 *dstbits, int dstwidth, int dstheight, int dstppr,
+		damn::bitmapscale_filtertype filtertype,
+		float filterwidth=0.0f );
 }
 
 //-----------------------------------------------------------------------------

@@ -40,7 +40,12 @@ struct bitmap_rgb
 	bitmap_rgb() {};
 	bitmap_rgb( const rgb_color &col ) : blue(col.blue), green(col.green), red(col.red), alpha(col.alpha) {};
 
-//	rgb_color operator=() { rgb_color col; col.red=red; col.green=green; col.blue=blue; col.alpha=alpha; return col; };
+	operator rgb_color() const { rgb_color col; col.red=red; col.green=green; col.blue=blue; col.alpha=alpha; return col; };
+
+	int RGBDist( const rgb_color &other ) const
+	{
+		return (other.red-red)*(other.red-red)*299 + (other.green-green)*(other.green-green)*587 + (other.blue-blue)*(other.blue-blue)*114;
+	}
 
 	uint8 blue;
 	uint8 green;
@@ -49,7 +54,7 @@ struct bitmap_rgb
 };
 
 #define BBITMAP32_BITS(bitmap,xpos,ypos) \
-	(((uint32*)(((uint8*)((bitmap)->Bits())) + ((ypos)*(srcbitmap)->BytesPerRow()))) + (xpos))
+	(((uint32*)(((uint8*)((bitmap)->Bits())) + ((ypos)*(bitmap)->BytesPerRow()))) + (xpos))
 
 //------------------------------------------------------------------------------
 #endif

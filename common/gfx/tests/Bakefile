@@ -1,9 +1,19 @@
 all -> dummy:
 	[
+		bin/ColorQuantTest^executable:
 		bin/ScaleTest^executable:
 		bin/WriteGifTest^executable:
 	]
 {
+}
+
+bin/ColorQuantTest -> executable:
+	[
+		ColorQuantTest.cpp^object:static
+		../lib/libgfx.a
+	]
+{
+	LDFLAGS += -lbe -ltranslation
 }
 
 bin/ScaleTest -> executable:

@@ -155,6 +155,21 @@ void damn::Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscal
 	assert( (srcbitmap->ColorSpace()==B_RGB32) || (srcbitmap->ColorSpace()==B_RGBA32) );
 	assert( (dstbitmap->ColorSpace()==B_RGB32) || (dstbitmap->ColorSpace()==B_RGBA32) );
 
+	Scale(
+		(const uint32*)srcbitmap->Bits(), srcbitmap->Bounds().IntegerWidth()+1, srcbitmap->Bounds().IntegerHeight()+1, srcbitmap->BytesPerRow(),
+		(uint32*)dstbitmap->Bits(), dstbitmap->Bounds().IntegerWidth()+1, dstbitmap->Bounds().IntegerHeight()+1, dstbitmap->BytesPerRow(),
+		filtertype, filterwidth );
+}
+
+void damn::Scale(
+	const uint32 *srcbits, int srcwidth, int srcheight, int srcppr,
+	uint32 *dstbits, int dstwidth, int dstheight, int dstppr,
+	damn::bitmapscale_filtertype filtertype,
+	float filterwidth )
+{
+	assert( dstbits != NULL );
+	assert( srcbits != NULL );
+
 	scale_filterfunc *filterfunc;
 	float default_filterwidth;
 	
@@ -183,32 +198,24 @@ void damn::Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscal
 
 	if( filterwidth == 0.0f ) filterwidth = default_filterwidth;
 
-	int srcbitmap_width  = srcbitmap->Bounds().IntegerWidth()+1;
-	int srcbitmap_height = srcbitmap->Bounds().IntegerHeight()+1;
-	int dstbitmap_width  = dstbitmap->Bounds().IntegerWidth()+1;
-	int dstbitmap_height = dstbitmap->Bounds().IntegerHeight()+1;
-	int tmpbitmap_width  = dstbitmap_width;
-	int tmpbitmap_height = srcbitmap_height;
+	int tmpwidth  = dstwidth;
+	int tmpheight = srcheight;
 
-	uint32 *srcbitmap_bits = (uint32*)srcbitmap->Bits();
-	uint32 *dstbitmap_bits = (uint32*)dstbitmap->Bits();
-	uint32 *tmpbitmap_bits = new uint32[tmpbitmap_width*tmpbitmap_height];
+	uint32 *tmpbits = new uint32[tmpwidth*tmpheight];
 
-	int srcbitmap_bpr = srcbitmap->BytesPerRow() / 4;
-	int dstbitmap_bpr = dstbitmap->BytesPerRow() / 4;
-	int tmpbitmap_bpr = tmpbitmap_width;
+	int tmpppr = tmpwidth;
 
-	float xscale = float(dstbitmap_width) / float(srcbitmap_width);
-	float yscale = float(dstbitmap_height) / float(srcbitmap_height);
+	float xscale = float(dstwidth) / float(srcwidth);
+	float yscale = float(dstheight) / float(srcheight);
 
 //--
-	contriblist *contriblists = CalcFilterWeight( xscale, filterwidth, srcbitmap_width, dstbitmap_width, filterfunc );
+	contriblist *contriblists = CalcFilterWeight( xscale, filterwidth, srcwidth, dstwidth, filterfunc );
 
-	for( int iy=0; iy<tmpbitmap_height; iy++ )
+	for( int iy=0; iy<tmpheight; iy++ )
 	{
-		uint32 *src_bits = srcbitmap_bits + iy*srcbitmap_bpr;
-		uint32 *dst_bits = tmpbitmap_bits + iy*tmpbitmap_bpr;
-		for( int ix=0; ix<tmpbitmap_width; ix++ )
+		const uint32 *src_bits = srcbits + iy*srcppr;
+		uint32 *dst_bits = tmpbits + iy*tmpppr;
+		for( int ix=0; ix<tmpwidth; ix++ )
 		{
 			int32 rweight;
 			int32 gweight;
@@ -239,16 +246,16 @@ void damn::Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscal
 	delete[] contriblists;
 //--
 
-	contriblists = CalcFilterWeight( yscale, filterwidth, srcbitmap_height, dstbitmap_height, filterfunc );
+	contriblists = CalcFilterWeight( yscale, filterwidth, srcheight, dstheight, filterfunc );
 
 	// help cache coherency:
-	uint32 *bitmaprow = new uint32[ tmpbitmap_height ];
-	for( int ix=0; ix<dstbitmap_width; ix++ )
+	uint32 *bitmaprow = new uint32[ tmpheight ];
+	for( int ix=0; ix<dstwidth; ix++ )
 	{
-		for( int iy=0; iy<tmpbitmap_height; iy++ )
-			bitmaprow[iy] = tmpbitmap_bits[ix+iy*tmpbitmap_bpr];
+		for( int iy=0; iy<tmpheight; iy++ )
+			bitmaprow[iy] = tmpbits[ix+iy*tmpppr];
 			
-		for( int iy=0; iy<dstbitmap_height; iy++ )
+		for( int iy=0; iy<dstheight; iy++ )
 		{
 			int32 rweight;
 			int32 gweight;
@@ -271,13 +278,13 @@ void damn::Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscal
 			gweight = clamp(gweight>>16,0,255);
 			bweight = clamp(bweight>>16,0,255);
 			aweight = clamp(aweight>>16,0,255);
-			dstbitmap_bits[ ix + iy*dstbitmap_bpr ] = (rweight) | (gweight<<8) | (bweight<<16) | (aweight<<24) ;
+			dstbits[ ix + iy*dstppr ] = (rweight) | (gweight<<8) | (bweight<<16) | (aweight<<24) ;
 	}
 	}
 
 	delete[] bitmaprow;
 	delete[] contriblists;
-	delete[] tmpbitmap_bits;
+	delete[] tmpbits;
 }
 
 //-----------------------------------------------------------------------------

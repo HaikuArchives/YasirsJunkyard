@@ -26,26 +26,65 @@
  */
 
 //-----------------------------------------------------------------------------
-#ifndef DAMN_TRANSLATORUTILS_H
-#define DAMN_TRANSLATORUTILS_H
+#ifndef DAMN_COLORQUANT_H
+#define DAMN_COLORQUANT_H
 //-----------------------------------------------------------------------------    
+#include <vector>
 //-------------------------------------
+#include <interface/GraphicsDefs.h>
 #include <support/SupportDefs.h>
-#include <translation/TranslatorFormats.h>
-class BTranslatorRoster;
-class BMessage;
+class BBitmap;
 //-------------------------------------
+#include "gfx/BitmapUtils.h"
 //-----------------------------------------------------------------------------    
+
+// Replace with something smarter...
 
 namespace damn
 {
-	status_t FindTranslatorsFor( BTranslatorRoster *roster, uint32 intype, uint32 ingroup, const char *outmimetype, BMessage *result );
-
-	TranslatorBitmap ConvertToBigEndian( const TranslatorBitmap &native );
-	TranslatorBitmap ConvertToNative( const TranslatorBitmap &bendian );
+	class ColorQuant
+	{
+	public:
+		ColorQuant( int maxcolors, int colorbits );
+		virtual ~ColorQuant();
 	
-	bool IsTranslatorBitmap( BPositionIO *io );
+		void AddColor( uint8 r, uint8 g, uint8 b );
+		void AddColor( const rgb_color &color ) { AddColor(color.red,color.green,color.blue); }
+		void AddColor( const bitmap_rgb &color ) { AddColor(color.red,color.green,color.blue); }
+		void AddColors( const BBitmap *bitmap );
+	
+		std::vector<rgb_color> GetColors() const;
+		
+	private:
+		struct Node
+		{
+			bool	leaf;
+
+			uint	count;
+			uint	red;
+			uint	green;
+			uint	blue;
+
+			Node	*child[8];
+			Node	*next;
+		};
+
+		void DeleteTree( Node **node );
+
+		void _AddColor( Node **node, uint8 r, uint8 g, uint8 b, int level );
+		void _GetColors( Node *node, std::vector<rgb_color> *palette ) const;
+
+		void ReduceTree();
+		Node *CreateNode( int level );
+
+		int		fMaxColors;
+		int		fColorBits;
+
+		Node	*fTree;
+		int		fLeafCount;
+		Node	*fReducibleNodes[9];
+	};
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------    
 #endif

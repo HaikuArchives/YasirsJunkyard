@@ -83,3 +83,53 @@ status_t damn::FindTranslatorsFor( BTranslatorRoster *roster, uint32 intype, uin
 
 //-----------------------------------------------------------------------------
 
+TranslatorBitmap damn::ConvertToBigEndian( const TranslatorBitmap &native )
+{
+	TranslatorBitmap bendian;
+	bendian.magic			= B_HOST_TO_BENDIAN_INT32( native.magic );
+	bendian.bounds.left		= B_HOST_TO_BENDIAN_FLOAT( native.bounds.left );
+	bendian.bounds.top		= B_HOST_TO_BENDIAN_FLOAT( native.bounds.top );
+	bendian.bounds.right	= B_HOST_TO_BENDIAN_FLOAT( native.bounds.right );
+	bendian.bounds.bottom	= B_HOST_TO_BENDIAN_FLOAT( native.bounds.bottom );
+	bendian.rowBytes		= B_HOST_TO_BENDIAN_INT32( native.rowBytes );
+	bendian.colors			= (color_space)B_HOST_TO_BENDIAN_INT32( (uint32)native.colors );
+	bendian.dataSize		= B_HOST_TO_BENDIAN_INT32( native.dataSize );
+	return bendian;
+}
+
+TranslatorBitmap damn::ConvertToNative( const TranslatorBitmap &bendian )
+{
+	TranslatorBitmap native;
+	native.magic			= B_BENDIAN_TO_HOST_INT32( bendian.magic );
+	native.bounds.left		= B_BENDIAN_TO_HOST_FLOAT( bendian.bounds.left );
+	native.bounds.top		= B_BENDIAN_TO_HOST_FLOAT( bendian.bounds.top );
+	native.bounds.right		= B_BENDIAN_TO_HOST_FLOAT( bendian.bounds.right );
+	native.bounds.bottom	= B_BENDIAN_TO_HOST_FLOAT( bendian.bounds.bottom );
+	native.rowBytes			= B_BENDIAN_TO_HOST_INT32( bendian.rowBytes );
+	native.colors			= (color_space)B_BENDIAN_TO_HOST_INT32( (uint32)bendian.colors );
+	native.dataSize			= B_BENDIAN_TO_HOST_INT32( bendian.dataSize );
+	return native;
+}
+
+bool damn::IsTranslatorBitmap( BPositionIO *io )
+{
+	TranslatorBitmap header;
+	
+	if( io->Read(&header, sizeof(header)) != sizeof(header) )
+		return B_IO_ERROR;
+	
+	header = ConvertToNative( header );
+	
+	if( header.magic != B_TRANSLATOR_BITMAP )
+		return B_ERROR;
+	
+	if( header.bounds.left>header.bounds.right || header.bounds.top>header.bounds.bottom )
+		return B_ERROR;
+
+	if( header.dataSize != header.rowBytes * (header.bounds.IntegerHeight()+1) )
+		return B_ERROR;
+		
+	return B_OK;
+}
+
+//-----------------------------------------------------------------------------
