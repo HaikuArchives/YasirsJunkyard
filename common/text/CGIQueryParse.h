@@ -26,40 +26,35 @@
  */
 
 //-----------------------------------------------------------------------------
+#ifndef DAMN_TEXT_CGIQUERYPARSE_H
+#define DAMN_TEXT_CGIQUERYPARSE_H
+//-----------------------------------------------------------------------------
 //-------------------------------------
-#include <storage/Mime.h>
+#include <sys/types.h>
 //-------------------------------------
-#include "AutoPtr.h"
-#include "StorageUtils.h"
 //-----------------------------------------------------------------------------
 
-status_t damn_Copy( BDataIO *in, BDataIO *out, ssize_t *copiedbytes, size_t buffersize )
+namespace damn
 {
-	return damn::Copy( in, out, copiedbytes, buffersize );
-}
+	size_t CGIDeescapeString( char *dst, const char *src, size_t maxlen );
 
-status_t damn::Copy( BDataIO *in, BDataIO *out, ssize_t *copiedbytes, size_t buffersize )
-{
-	assert( in != NULL );
-	assert( out != NULL );
-	assert( buffersize > 0 );
-
-	damn::AutoArray<uint8> buffer( buffersize );
-	
-	if( copiedbytes ) *copiedbytes = 0;
-
-	ssize_t readsize;
-	while( (readsize=in->Read(buffer, buffersize)) > 0 )
+	class CGIQueryParse
 	{
-		ssize_t writesize = out->Write( buffer, readsize );
-		if( writesize>0 && copiedbytes ) *copiedbytes += writesize;
-		if( writesize != readsize )
-			return B_IO_ERROR;
-	}
-	if( readsize < 0 )
-		return B_IO_ERROR;
+	public:
+		CGIQueryParse( const char *string );
+		~CGIQueryParse();
 
-	return B_OK;
+		const char *FindName( const char *name, const char *defstring=NULL );
+
+	private:
+		void AddPair( char *name_value );
+		void AddPair( char *name, char *value );
+
+		char	*fOrgString;
+		int		fArgs;
+		char	**fArgList;
+	};
 }
 
 //-----------------------------------------------------------------------------
+#endif

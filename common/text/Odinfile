@@ -1,0 +1,7 @@
+%text.a == %text.sm +inc_sp=(../../common) +optimize=3 :a
+%text_dbg.a == %text.sm +inc_sp=(../../common) +debug :a
+
+%text.sm == <<
+	Bitmap2Text.cpp
+	CGIQueryParse.cpp
+

@@ -1,0 +1,8 @@
+%all! == <<
+	%bitmap2text
+
+%bitmap2text == bitmap2text.cpp \
+	+inc_sp=(../..) \
+	+lib=(..%text.a) (../../gfx/%gfx.a) -lbe -ltranslation \
+	+optimize=3 \
+	:exe

@@ -26,22 +26,101 @@
  */
 
 //-----------------------------------------------------------------------------
-#ifndef DAMN_STORAGEUTILS_H
-#define DAMN_STORAGEUTILS_H
+#ifndef DAMN_ENUMMAPPER_H
+#define DAMN_ENUMMAPPER_H
 //-----------------------------------------------------------------------------
-#include <stddef.h>
 //-------------------------------------
-#include <support/DataIO.h>
-//class BDataIO;
+//#include <app/Message.h>
+//#include <support/String.h>
 //-------------------------------------
+#include "List.h"
 //-----------------------------------------------------------------------------
 
 namespace damn
 {
-	status_t Copy( BDataIO *in, BDataIO *out, ssize_t *copiedbytes=NULL, size_t buffersize=64*1024 );
+	template<class T>
+	class EnumMapping
+	{
+	public:
+		EnumMapping() {};
+		~EnumMapping()
+		{
+			for( int i=0; i<fKeyList.CountItems(); i++ )
+				delete fKeyList.ItemAtFast( i );
+		}
+		
+		void AddEnum( int e_num, T val )
+		{
+			keyval *k = new keyval( e_num, val );
+			fKeyList.AddItem( k );
+		}
+	
+		status_t GetVal( int e_num, T *val, int *index )
+		{
+			for( int i=0; i<fKeyList.CountItems(); i++ )
+			{
+				keyval *k = fKeyList.ItemAtFast( i );
+				if( k->key == e_num )
+				{
+					if( val )
+						*val = k->val;
+					if( index )
+						*index = i;
+					return B_OK;
+				}
+			}
+			return B_ERROR;
+		}
+	
+		status_t GetEnum( T val, int *e_num, int *index )
+		{
+			for( int i=0; i<fKeyList.CountItems(); i++ )
+			{
+				keyval *k = fKeyList.ItemAtFast( i );
+				if( k->val == val )
+				{
+					if( e_num )
+						*e_num = k->key;
+					if( index )
+						*index = i;
+					return B_OK;
+				}
+			}
+			return B_ERROR;
+		}
+	
+		status_t GetNearestEnum( T val, int *e_num )
+		{
+			assert( e_num != NULL );
+	
+			if( fKeyList.CountItems() == 0 )
+				return B_ERROR;
+	
+			keyval *best = fKeyList.ItemAtFast( 0 );
+			T best_dist = best->val - val;
+			if( best_dist < 0 ) best_dist = -best_dist;
+			
+			for( int i=1; i<fKeyList.CountItems(); i++ )
+			{
+				keyval *k = fKeyList.ItemAtFast( i );
+				T dist = k->val - val;
+				if( dist < 0 ) dist = -dist;
+				if( dist < best_dist )
+				{
+					best = k;
+					best_dist = dist;
+				}
+			}
+	
+			*e_num = best->key;
+			return B_OK;
+		}
+	
+	private:
+		struct keyval { keyval(int k,T v) : key(k), val(v) {}; int key; T val;  };
+		damn::List<keyval>	fKeyList;
+	};
 }
-
-status_t damn_Copy( BDataIO *in, BDataIO *out, ssize_t *copiedbytes=NULL, size_t buffersize=64*1024 );
 
 //-----------------------------------------------------------------------------
 #endif

@@ -40,19 +40,32 @@ namespace damn
 	class Settings
 	{
 	public:
-					Settings( const char *filename, bool writeondestruct=false );
-					Settings( const BMessage &message );
-					Settings( const Settings &settings );
-					~Settings();
+		Settings( const char *filename, bool writeondestruct=false );
+		Settings( const BMessage &message );
+		Settings( const Settings &settings );
+		~Settings();
 					
-		status_t	Write( const char *filename=NULL );
+		status_t Write( const char *filename=NULL );
+		
+		BMessage *GetMessage() { return &fMessage; }
 
-		const char	*GetString( const char *name, const char *defaultvalue=NULL );
-		bool		GetBool( const char *name, bool defaultvalue );
-		int32		GetInt32( const char *name, int32 defaultvalue );
+		const char *GetString( const char *name, const char *defaultvalue=NULL ) const;
+		bool GetMessage( const char *name, BMessage *value ) const;
+		bool GetBool( const char *name, bool defaultvalue ) const;
+		float GetFloat( const char *name, float defaultvalue ) const;
+		int32 GetInt32( const char *name, int32 defaultvalue ) const;
+		int64 GetInt64( const char *name, int64 defaultvalue ) const;
+		BPoint GetPoint( const char *name, BPoint defaultvalue ) const;
+		BRect GetRect( const char *name, BRect defaultvalue ) const;
 
-		void		SetBool( const char *name, bool value );
-		void		SetInt32( const char *name, int32 value );
+		void SetString( const char *name, const char *value );
+		void SetMessage( const char *name, const BMessage *value );
+		void SetBool( const char *name, bool value );
+		void SetFloat( const char *name, float value );
+		void SetInt32( const char *name, int32 value );
+		void SetInt64( const char *name, int64 value );
+		void SetPoint( const char *name, BPoint value );
+		void SetRect( const char *name, BRect value );
 
 	private:
 		Settings 	&operator=( const Settings &settings );

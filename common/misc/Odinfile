@@ -1,0 +1,7 @@
+%misc.a == %misc.sm +inc_sp=(../../common) +optimize=3 :a
+%misc_dbg.a == %misc.sm +inc_sp=(../../common) +debug :a
+
+%misc.sm == <<
+	InstallTranslator.cpp
+	MimeUtils.cpp
+	Settings.cpp

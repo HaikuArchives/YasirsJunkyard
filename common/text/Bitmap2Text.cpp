@@ -28,17 +28,22 @@
 //-----------------------------------------------------------------------------
 //#include <assert.h>
 //#include <math.h>
-//#include <stdio.h>
+#include <stdio.h>
 //-------------------------------------
 #include <interface/Bitmap.h>
 #include <support/ByteOrder.h>
 //#include <support/SupportDefs.h>
 //-------------------------------------
+#include "misc/AutoPtr.h"
 #include "Bitmap2Text.h"
 //#include "gfx/BitmapScale.h"
 //-----------------------------------------------------------------------------
 
-static const char chars[] = ".:-+=osOS@";
+//static const char chars[] = ".,:;-+=iogsIOGS@";
+//static const char chars[] = ".,:;-+=@";
+static const char chars[] = ".:+=@";
+//static const char chars[] = ".@";
+static const int chars_len = strlen(chars)-1;
 
 #if 0
 std::vector<std::vector<damn::colchar_t> > damn::Bitmap2Text( const BBitmap *bitmap, int width, int height )
@@ -83,9 +88,18 @@ std::vector<std::vector<damn::colchar_t> > damn::Bitmap2Text( const BBitmap *bit
 	int height = bitmap->Bounds().IntegerHeight()+1;
 
 	std::vector<std::vector<damn::colchar_t> > text;
+
+	// dither
+	damn::AutoArray<int> dithererror( 2*(1+width+1) );
+	memset( dithererror, 0, (2*(width+2))*sizeof(int) );
+	int errorindex = 0;
 	
 	for( int iy=0; iy<height; iy++ )
 	{
+		int errorindex2 = errorindex;
+		errorindex = errorindex^1;
+		memset( dithererror+(errorindex2*(width+2)), 0, (width+2)*sizeof(int) );
+
 		text.push_back( std::vector<damn::colchar_t>() );
 
 		const uint32 *dstrow = (const uint32*)((const uint8*)bitmap->Bits()+iy*bitmap->BytesPerRow());
@@ -97,9 +111,33 @@ std::vector<std::vector<damn::colchar_t> > damn::Bitmap2Text( const BBitmap *bit
 			int b = (col>>24)&0xff;
 			
 			int gray = (r*299 + g*587 + b*114) / 1000;
+//			int gray = ix*255/width;
+
+#if 0
+			int dithergray = gray + dithererror[errorindex*(width+2)+1+ix];
+			if( dithergray < 0 ) dithergray = 0;
+			else if( dithergray > 255 ) dithergray = 255;
+			int ditherres = (dithergray*(sizeof(chars)-1))/256;
+			int err = gray - ditherres*256/(sizeof(chars)-1);
+#else
+			gray += dithererror[errorindex*(width+2)+1+ix];
+//			if( gray < 0 ) gray = 0;
+//			else if( gray > 255 ) gray = 255;
+			int dithergray = gray;
+#endif
+
+			int ditherres = (dithergray*chars_len)/256;
+			if( ditherres < 0 ) ditherres = 0;
+			else if( ditherres > chars_len ) ditherres = chars_len;
+
+			int err = gray - ditherres*256/chars_len;
+			dithererror[errorindex*(width+2)+ix+2]	+= (err*7)>>4;
+			dithererror[errorindex2*(width+2)+ix]	+= (err*3)>>4;
+			dithererror[errorindex2*(width+2)+ix+1]	+= (err*5)>>4;
+			dithererror[errorindex2*(width+2)+ix+2]	+= (err*1)>>4;
 
 			colchar_t cc;
-			cc.c = chars[gray*(sizeof(chars)-1)/256];
+			cc.c = chars[ditherres];
 			cc.rgbcol.red = r;
 			cc.rgbcol.green = g;
 			cc.rgbcol.blue = b;
