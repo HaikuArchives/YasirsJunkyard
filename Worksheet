@@ -33,3 +33,11 @@ NetPositive http://sfdocs.sourceforge.net/sfdocs/site/user/newproject-howto.php
 sfscp ~/Desktop/bake.zip yasir@yasirsjunkyard.sourceforge.net:/home/groups/ftp/pub/yasirsjunkyard
 sfscp ~/Desktop/bake_n_stuff.zip  yasir@yasirsjunkyard.sourceforge.net:/home/groups/ftp/pub/yasirsjunkyard/bake_src.zip
 --------------------------------------------------------------------------------
+sfscp yasir@yasirsjunkyard.sourceforge.net:/home/groups/yasirsjunkyard/log/combined_log ~/Desktop/Junkyard.log
+sfscp yasir@yasirsjunkyard.sourceforge.net:/home/groups/BeCPiA/log/combined_log ~/Desktop/BeCPiA.log
+
+mkdir /tmp/Junkyard ; /projects/webalizer-1.30-04/webalizer -n yasirsjunkyard.sourceforge.net -o /tmp/Junkyard -t Junkyard ~/Desktop/Junkyard.log ; open /tmp/Junkyard/index.html 
+mkdir /tmp/BeCPiA ; /projects/webalizer-1.30-04/webalizer -n BeCPiA.sourceforge.net -o /tmp/BeCPiA -t BeCPiA ~/Desktop/BeCPiA.log ; open /tmp/BeCPiA/index.html 
+--------------------------------------------------------------------------------
+
+
