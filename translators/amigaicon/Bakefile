@@ -1,0 +1,85 @@
+VERSION_MAJOR		= 0
+VERSION_MINOR		= 6
+VERSION_REVISION	= 1
+
+DEFINES	+= VERSION_MAJOR=$(VERSION_MAJOR)
+DEFINES	+= VERSION_MINOR=$(VERSION_MINOR)
+DEFINES	+= VERSION_REVISION=$(VERSION_REVISION)
+
+DISTNAME = AmigaIcon_$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_REVISION)
+# CPU should be set using uname
+CPU = x86
+BINARC = $(DISTNAME)_$(CPU).zip
+SRCARC = $(DISTNAME)_src.zip
+
+bin/AmigaIconTranslator -> executable:
+	[
+		AmigaIconTranslator.cpp^object:static
+		Configuration.cpp^object:static
+		AmigaIconRead.cpp^object:static
+		HSIRawTranslator.cpp^object:static
+		
+		../../common/dle/lib/liblayoutengine.a
+		../../common/misc/lib/libmisc.a
+		
+		AmigaIconTranslatorX86.rsrc
+	]
+	(
+	)
+{
+	LDFLAGS += -lbe
+}
+
+install ::
+	(
+		bin/AmigaIconTranslator^executable:
+	)
+{
+	<<<
+ 		$(_builddir_)/bin/AmigaIconTranslator --install
+	>>>
+}
+
+#test.zip -> binarc:
+
+#$(DISTNAME).zip -> binarc:
+#	[
+#		bin/AmigaIconTranslator^executable:
+#
+#		documentation/amigaicon_doc.html^htmldoc:
+#		documentation/amigaiconconfig.png
+#	]
+#	(
+#	)
+#{
+#}
+
+#binarc ::
+#	(
+#		$(DISTNAME).zip^binarc:
+#	)
+#{
+#	<<<
+#	>>>
+#}
+
+binarc ::
+	(
+		bin/AmigaIconTranslator^executable:
+		amigaicontranslator/documentation/gendoc
+	)
+{
+	<<<
+		sh -c "\
+			mkdir -p $(DISTNAME) ; \
+	 		copyattr -d $(_builddir_)/bin/AmigaIconTranslator $(DISTNAME) && \
+	 		copyattr -d $(_builddir_)/documentation/* $(DISTNAME) && \
+	 		mimeset -F $(DISTNAME) && \
+	 		rm $(BINARC) >/dev/null 2>&1 ; \
+	 		zip -9r $(BINARC) $(DISTNAME) && \
+	 		rm $(DISTNAME)/* && \
+	 		rmdir $(DISTNAME)"
+	>>>
+}
+
+

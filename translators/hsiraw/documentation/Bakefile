@@ -1,0 +1,19 @@
+gendoc ::
+	(
+		hsiraw_doc.html^htmldoc:
+	)
+{
+	<<<
+		cp $(_sourcedir_)/hsirawconfig.png $(_builddir_)
+	>>>
+}
+
+#gendoc -> dummy:
+#	[
+#		hsiraw_doc.html^htmldoc:
+#		hsirawconfig.png
+#	]
+#	(
+#	)
+#{
+#}

@@ -1,0 +1,20 @@
+gendoc ::
+	(
+		amigaicon_doc.html^htmldoc:
+	)
+{
+	<<<
+		cp $(_sourcedir_)/amigaiconconfig.png $(_builddir_)
+	>>>
+}
+
+#gendoc -> dummy:
+#	[
+#		amigaicon_doc.html^htmldoc:
+#		amigaiconconfig.png^copyfile:
+#	]
+#	(
+#	)
+#{
+#}
+

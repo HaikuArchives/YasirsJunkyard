@@ -1,0 +1,61 @@
+VERSION_MAJOR		= 0
+VERSION_MINOR		= 9
+VERSION_REVISION	= 1
+
+DEFINES	+= VERSION_MAJOR=$(VERSION_MAJOR)
+DEFINES	+= VERSION_MINOR=$(VERSION_MINOR)
+DEFINES	+= VERSION_REVISION=$(VERSION_REVISION)
+
+DISTNAME = HSIRaw_$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_REVISION)
+# CPU should be set using uname
+CPU = x86
+BINARC = $(DISTNAME)_$(CPU).zip
+SRCARC = $(DISTNAME)_src.zip
+
+bin/HSIRawTranslator -> executable:
+	[
+		HSIRawTranslator.cpp^object:static
+		HSIRead.cpp^object:static
+		HSIWrite.cpp^object:static
+		Palettes.cpp^object:static
+		
+		../../common/dle/lib/liblayoutengine.a
+		../../common/misc/lib/libmisc.a
+		
+		HSIRawTranslatorX86.rsrc
+	]
+	(
+	)
+{
+	LDFLAGS += -lbe
+}
+
+install ::
+	(
+		bin/HSIRawTranslator^executable:
+	)
+{
+	<<<
+ 		$(_builddir_)/bin/HSIRawTranslator --install
+	>>>
+}
+
+binarc ::
+	(
+		bin/HSIRawTranslator^executable:
+		hsirawtranslator/documentation/gendoc
+	)
+{
+	<<<
+		sh -c "\
+			mkdir -p $(DISTNAME) ; \
+	 		copyattr -d $(_builddir_)/bin/HSIRawTranslator $(DISTNAME) && \
+	 		copyattr -d $(_builddir_)/documentation/* $(DISTNAME) && \
+	 		mimeset -F $(DISTNAME) && \
+	 		rm $(BINARC) >/dev/null 2>&1 ; \
+	 		zip -9r $(BINARC) $(DISTNAME) && \
+	 		rm $(DISTNAME)/* && \
+	 		rmdir $(DISTNAME)"
+	>>>
+}
+

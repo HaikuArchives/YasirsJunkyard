@@ -1,0 +1,11 @@
+bin/optrexcpumon -> executable:
+	[
+		Main.cpp^object:static
+	]
+	(
+		/kerneldrivers/w8378x/install
+		/kerneldrivers/optrex/install
+	)
+{
+	LDFLAGS += -lbe
+}
