@@ -1,0 +1,7 @@
+%storage.a == %storage.sm +inc_sp=(../../common) +optimize=3 :a
+%storage_dbg.a == %storage.sm +inc_sp=(../../common) +debug :a
+
+%storage.sm == <<
+	Utils.cpp
+	DataPump.cpp
+	ZStorage.cpp
