@@ -36,13 +36,23 @@ class BBitmap;
 
 enum bitmapscale_filtertype
 {
-	filter_filter,
+	filter_point,
 	filter_box,
 	filter_triangle,
 	filter_bell,
 	filter_bspline,
+	filter_catrom,
+	filter_gaussian,
+	filter_sinc,
+	filter_bessel,
+	filter_mitchell,
+	filter_hanning,
+	filter_hamming,
+	filter_blackman,
+	filter_kaiser,
+	filter_normal,
+	filter_filter,
 	filter_lanczos3,
-	filter_mitchell
 };
 
 void Scale( BBitmap *srcbitmap, BBitmap *dstbitmap, bitmapscale_filtertype filtertype, float filterwidth=0.0f );

@@ -53,13 +53,22 @@ struct contriblist
 
 typedef float (scale_filterfunc)(float);
 
-static float Filter_Filter( float );
-static float Filter_Box( float );
-static float Filter_Triangle( float );
-static float Filter_Bell( float );
-static float Filter_BSpline( float );
-static float Filter_Lanczos3( float );
-static float Filter_Mitchell( float );
+static float Filter_Box( float t );
+static float Filter_Triangle( float t );
+static float Filter_Bell( float t );
+static float Filter_BSpline( float t );
+static float Filter_Catrom( float t );
+static float Filter_Gaussian( float t );
+static float Filter_Sinc( float t );
+static float Filter_Bessel( float t );
+static float Filter_Mitchell( float t );
+static float Filter_Hanning( float t );
+static float Filter_Hamming( float t );
+static float Filter_Blackman( float t );
+static float Filter_Kaiser( float t );
+static float Filter_Normal( float t );
+static float Filter_Filter( float t );
+static float Filter_Lanczos3( float t );
 
 int clamp( int v, int l, int h ) { return v<l?l:v>h?h:v; }
 
@@ -90,7 +99,9 @@ contriblist *CalcFilterWeight( float scale, float filterwidth, int srcsize, int 
 		float start = ceil( center - size );
 		float end = floor( center + size );
 		float totweight = 0.0f;
-		for( int j=(int)start; j<=end; j++ )
+//		for( int j=(int)start; j<=end; j++ )
+		int j=(int)start;
+		do
 		{
 			int sourcepos;
 			if( j < 0 )					sourcepos = -j;
@@ -102,7 +113,11 @@ contriblist *CalcFilterWeight( float scale, float filterwidth, int srcsize, int 
 			float weight = filterfunc( (center-(float)j)*fscale ) * fscale;
 			totweight += weight;
 			contriblists[i].contribs[newcontrib].floatweight = weight;
+
+			j++;
 		}
+		while( j<=end );
+
 		totweight = 1.0f/totweight;
 		for( int j=0; j<contriblists[i].contribcnt; j++ )
 		{
@@ -136,13 +151,23 @@ void Scale( BBitmap *srcbitmap, BBitmap *dstbitmap, bitmapscale_filtertype filte
 	
 	switch( filtertype )
 	{
-		case filter_filter:		filterfunc=Filter_Filter;	default_filterwidth=1.0f;	break;
-		case filter_box:		filterfunc=Filter_Box;		default_filterwidth=0.5f;	break;	// was 0.5
+		case filter_point:		filterfunc=Filter_Box;		default_filterwidth=0.0f;	break;
+		case filter_box:		filterfunc=Filter_Box;		default_filterwidth=0.5f;	break;
 		case filter_triangle:	filterfunc=Filter_Triangle;	default_filterwidth=1.0f;	break;
 		case filter_bell:		filterfunc=Filter_Bell;		default_filterwidth=1.5f;	break;
 		case filter_bspline:	filterfunc=Filter_BSpline;	default_filterwidth=2.0f;	break;
-		case filter_lanczos3:	filterfunc=Filter_Lanczos3;	default_filterwidth=3.0f;	break;
+		case filter_catrom:		filterfunc=Filter_Catrom;	default_filterwidth=2.0f;	break;
+		case filter_gaussian:	filterfunc=Filter_Gaussian;	default_filterwidth=1.25f;	break;
+		case filter_sinc:		filterfunc=Filter_Sinc;		default_filterwidth=4.0f;	break;
+		case filter_bessel:		filterfunc=Filter_Bessel;	default_filterwidth=3.2383f;break;
 		case filter_mitchell:	filterfunc=Filter_Mitchell;	default_filterwidth=2.0f;	break;
+		case filter_hanning:	filterfunc=Filter_Hanning;	default_filterwidth=1.0f;	break;
+		case filter_hamming:	filterfunc=Filter_Hamming;	default_filterwidth=1.0f;	break;
+		case filter_blackman:	filterfunc=Filter_Blackman;	default_filterwidth=1.0f;	break;
+		case filter_kaiser:		filterfunc=Filter_Kaiser;	default_filterwidth=1.0f;	break;
+		case filter_normal:		filterfunc=Filter_Normal;	default_filterwidth=1.25f;	break;
+		case filter_filter:		filterfunc=Filter_Filter;	default_filterwidth=1.0f;	break;
+		case filter_lanczos3:	filterfunc=Filter_Lanczos3;	default_filterwidth=3.0f;	break;
 
 		default:				filterfunc=Filter_Filter;	default_filterwidth=1.0f;	break;
 	}
@@ -248,34 +273,28 @@ void Scale( BBitmap *srcbitmap, BBitmap *dstbitmap, bitmapscale_filtertype filte
 
 //-----------------------------------------------------------------------------
 
-static float Filter_Filter( float t )
-{
-	/* f(t) = 2|t|^3 - 3|t|^2 + 1, -1 <= t <= 1 */
-	if( t < 0.0f ) t = -t;
-	if( t < 1.0f ) return (2.0f * t - 3.0f) * t * t + 1.0f;
-	return 0.0f;
-}
-
-//-----------------------------------------------------------------------------
-
+// box, pulse, Fourier window, 1st order (constant) b-spline
 static float Filter_Box( float t )
 {
-	if( (t > -0.5f) && (t <= 0.5f) ) return 1.0f;
-	return 0.0f;
+    if( t < -0.5f ) return 0.0f;
+    if( t < 0.5f ) return 1.0f;
+    return 0.0f;
 }
 
 //-----------------------------------------------------------------------------
 
+// triangle, Bartlett window, 2nd order (linear) b-spline
 static float Filter_Triangle( float t )
 {
 	if( t < 0.0f ) t = -t;
-	if( t < 1.0f ) return 1.0f-t;
+	if( t < 1.0f ) return 1.0f - t;
 	return 0.0f;
 }
 
 //-----------------------------------------------------------------------------
 
-static float Filter_Bell( float t )		/* box (*) box (*) box */
+// 3rd order (quadratic) b-spline
+static float Filter_Bell( float t )
 {
 	if( t < 0.0f ) t = -t;
 	if( t < 0.5f ) return 0.75f-(t*t);
@@ -289,7 +308,8 @@ static float Filter_Bell( float t )		/* box (*) box (*) box */
 
 //-----------------------------------------------------------------------------
 
-static float Filter_BSpline( float t )	/* box (*) box (*) box (*) box */
+// 4th order (cubic) b-spline
+static float Filter_BSpline( float t )
 {
 	float tt;
 
@@ -309,12 +329,135 @@ static float Filter_BSpline( float t )	/* box (*) box (*) box (*) box */
 
 //-----------------------------------------------------------------------------
 
-static inline float sinc( float x )
+// Catmull-Rom spline, Overhauser spline
+static float Filter_Catrom( float t )
 {
-	x *= 3.1415926f;
-	if( x != 0 ) return sin(x)/x;
-	return 1.0f;
+	if( t < 0.0f ) t = -t;
+	if( t < 1.0f ) return 0.5f*(2.0f+t*t*(-5.0f+t*3.0f));
+	if( t < 2.0f ) return 0.5f*(4.0f+t*(-8.0f+t*(5.0f-t)));
+    return 0.0f;
 }
+
+//-----------------------------------------------------------------------------
+
+// Gaussian (infinite)
+static float Filter_Gaussian( float t )
+{
+	return exp(-2.0f*t*t) * sqrt(2.0f/PI);
+}
+
+//-----------------------------------------------------------------------------
+
+// Sinc, perfect lowpass filter (infinite)
+static float Filter_Sinc( float t )
+{
+	if( t == 0.0f ) return 1.0f;
+	t *= PI;
+	return sin(t) / t;
+}
+
+//-----------------------------------------------------------------------------
+
+// Bessel (for circularly symm. 2-d filt, inf), See Pratt "Digital Image Processing" p. 97
+static float Filter_Bessel( float t )
+{
+	if( t == 0.0f ) return PI/4.0f;
+	return j1(t*PI) / (t*2.0f); // j1 is order 1 bessel function from the stdlib.
+}
+
+//-----------------------------------------------------------------------------
+
+static const float mitchell_b = 1.0f / 3.0f;
+static const float mitchell_c = 1.0f / 3.0f;
+
+static float Filter_Mitchell( float t )
+{
+	float tt;
+
+	tt = t * t;
+	if( t < 0.0f ) t = -t;
+	if( t < 1.0f ) 
+	{
+		t = ((12.0f - 9.0f*mitchell_b - 6.0f*mitchell_c) * (t * tt)) +
+			((-18.0f + 12.0f*mitchell_b + 6.0f*mitchell_c) * tt) + (6.0f - 2.0f*mitchell_b);
+		return t/6.0f;
+	} 
+	else if( t < 2.0f ) 
+	{
+		t = ((-1.0f*mitchell_b - 6.0f*mitchell_c) * (t * tt)) + ((6.0f*mitchell_b + 30.0f*mitchell_c) * tt) +
+			((-12.0f*mitchell_b - 48.0f*mitchell_c) * t) + (8.0f*mitchell_b + 24.0f*mitchell_c);
+		return t/6.0f;
+	}
+	return 0.0f;
+}
+
+//-----------------------------------------------------------------------------
+
+// Hanning window
+static float Filter_Hanning( float t )
+{
+	return 0.5f + 0.5f*cos(t*PI);
+}
+
+// Hamming window
+static float Filter_Hamming( float t )
+{
+	return 0.54f + 0.46f*cos(t*PI);
+}
+
+// Blackman window
+static float Filter_Blackman( float t )
+{
+	return 0.42f + 0.50f*cos(t*PI) + 0.08f*cos(t*2.0f*PI);
+}
+
+//-----------------------------------------------------------------------------
+
+#define EPSILON 1e-7
+
+static float bessel_i0( float t )
+{
+	float tt4 = t*t/4.0f;
+	float t2 = tt4;
+	
+	float sum = 1.0f;
+	for( int i=2; t2>EPSILON; i++ )
+	{
+		sum += t2;
+		t2 *= tt4 / float(i*i);
+    }
+
+    return sum;
+}
+
+static float kaiser_a = 6.5f;
+static float kaiser_i0a = 1.0f / bessel_i0(kaiser_a);
+
+// Kaiser window
+static float Filter_Kaiser( float t )
+{
+    return bessel_i0( kaiser_a * sqrt(1.0f-t*t) ) * kaiser_i0a;
+}
+
+//-----------------------------------------------------------------------------
+
+// Normal(x) = Gaussian(x/2)/2
+static float Filter_Normal( float t )
+{
+	return exp( -t * t/2.0f ) / sqrt(2.0f*PI);
+}
+
+//-----------------------------------------------------------------------------
+
+static float Filter_Filter( float t )
+{
+	/* f(t) = 2|t|^3 - 3|t|^2 + 1, -1 <= t <= 1 */
+	if( t < 0.0f ) t = -t;
+	if( t < 1.0f ) return (2.0f * t - 3.0f) * t * t + 1.0f;
+	return 0.0f;
+}
+
+//-----------------------------------------------------------------------------
 
 static float Filter_Lanczos3( float t )
 {
@@ -326,7 +469,7 @@ static float Filter_Lanczos3( float t )
 	if( t == 0.0f ) return 1.0f * 1.0f;
 	if( t < 3.0f )
 	{
-		t *= 3.1415926;
+		t *= PI;
 //		return sin(t)/t * sin(t/3.0f)/(t/3.0f);
 		return 3.0f*sin(t)*sin(t*(1.0f/3.0f)) / (t*t);
 	}
@@ -335,38 +478,5 @@ static float Filter_Lanczos3( float t )
 }
 
 //-----------------------------------------------------------------------------
-
-#define	B (1.0f / 3.0f)
-#define	C (1.0f / 3.0f)
-
-static float Filter_Mitchell( float t )
-{
-	float tt;
-
-	tt = t * t;
-	if( t < 0.0f ) t = -t;
-	if( t < 1.0f ) 
-	{
-		t = ((12.0f - 9.0f*B - 6.0f*C) * (t * tt)) + ((-18.0f + 12.0f*B + 6.0f*C) * tt) + (6.0f - 2.0f*B);
-		return t/6.0f;
-	} 
-	else if( t < 2.0f ) 
-	{
-		t = ((-1.0f*B - 6.0f*C) * (t * tt)) + ((6.0f*B + 30.0f*C) * tt) + ((-12.0f*B - 48.0f*C) * t) + (8.0f*B + 24.0f*C);
-		return t/6.0f;
-	}
-	return 0.0f;
-}
-
-//-----------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
 
 

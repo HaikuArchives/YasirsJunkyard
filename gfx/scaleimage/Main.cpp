@@ -52,8 +52,11 @@ void Usage( const char *argv0 )
 	fprintf( stderr, "  -y, --ysize=HEIGHT       scale image to 'HEIGHT'\n" );
 	fprintf( stderr, "  -t, --outformat=FORMAT   format of dstimage, must be 4 character type\n" );
 	fprintf( stderr, "  -f, --filter=FILTER      select filter type, must be one of:'\n" );
-	fprintf( stderr, "                           filte, box, triangle, bell,\n" );
-	fprintf( stderr, "                           bspline, lanczos3 or mitchell\n" );
+	fprintf( stderr, "                             point, box, triangle, bell, bspline, \n" );
+	fprintf( stderr, "                             catrom, gaussian, sinc, bessel,\n" );
+	fprintf( stderr, "                             mitchell, hanning, hamming, blackman, \n" );
+	fprintf( stderr, "                             kaiser, normal, filter or lanczos3\n" );
+	fprintf( stderr, "                             bspline, lanczos3 or mitchell\n" );
 	fprintf( stderr, "  -w, --filterwidth=WIDTH  Sets the filterwidth\n" );
 	fprintf( stderr, "  -v, --verbose            explain what is being done\n" );
 	fprintf( stderr, "\n" );
@@ -121,13 +124,23 @@ int main( int argc, char **argv )
 				break;
 
             case 'f':
-				if( strcasecmp(optarg,"filter") == 0 )			filter = filter_filter;
+				if( strcasecmp(optarg,"point") == 0 )			filter = filter_point;
 				else if( strcasecmp(optarg,"box") == 0 )		filter = filter_box;
 				else if( strcasecmp(optarg,"triangle") == 0 )	filter = filter_triangle;
 				else if( strcasecmp(optarg,"bell") == 0 )		filter = filter_bell;
 				else if( strcasecmp(optarg,"bspline") == 0 )	filter = filter_bspline;
-				else if( strcasecmp(optarg,"lanczos3") == 0 )	filter = filter_lanczos3;
+				else if( strcasecmp(optarg,"catrom") == 0 )		filter = filter_catrom;
+				else if( strcasecmp(optarg,"gaussian") == 0 )	filter = filter_gaussian;
+				else if( strcasecmp(optarg,"sinc") == 0 )		filter = filter_sinc;
+				else if( strcasecmp(optarg,"bessel") == 0 )		filter = filter_bessel;
 				else if( strcasecmp(optarg,"mitchell") == 0 )	filter = filter_mitchell;
+				else if( strcasecmp(optarg,"hanning") == 0 )	filter = filter_hanning;
+				else if( strcasecmp(optarg,"hamming") == 0 )	filter = filter_hamming;
+				else if( strcasecmp(optarg,"blackman") == 0 )	filter = filter_blackman;
+				else if( strcasecmp(optarg,"kaiser") == 0 )		filter = filter_kaiser;
+				else if( strcasecmp(optarg,"normal") == 0 )		filter = filter_normal;
+				else if( strcasecmp(optarg,"filter") == 0 )		filter = filter_filter;
+				else if( strcasecmp(optarg,"lanczos3") == 0 )	filter = filter_lanczos3;
 				else
 				{
 					fprintf( stderr, "Illegal filter: %s\n", optarg );
