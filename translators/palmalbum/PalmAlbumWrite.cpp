@@ -86,7 +86,7 @@ status_t Bitmap2PalmAlbum( BPositionIO *instream, BPositionIO *outstream )
 	 *  non documented, and it probertly only works on BeFS volumes.
 	 */
 
-	char dstname[B_FILE_NAME_LENGTH];
+	char dstname[B_FILE_NAME_LENGTH] = "";
 
 	if( dynamic_cast<BFile*>(outstream) != NULL )
 	{
@@ -99,7 +99,8 @@ status_t Bitmap2PalmAlbum( BPositionIO *instream, BPositionIO *outstream )
 			if( ext ) *ext = 0;
 		}
 	}
-	else
+	
+	if( dstname[0] == 0 )
 	{
 		// make up a bogus name
 		sprintf( dstname, "noname_%d", rand() );
