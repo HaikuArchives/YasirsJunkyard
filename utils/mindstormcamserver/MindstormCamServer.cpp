@@ -463,6 +463,9 @@ void CamServer::RequestReceived( Connection *connection )
 			int refresh_time = (text_width*text_height)/1000;
 			if( refresh_time < 1 )
 				refresh_time = 1;
+
+			if( text_width==40 && text_height==20 )
+				refresh_time = 0;
 			
 			if( text_compresslevel<0 || text_compresslevel>9 )
 				text_compresslevel = 0;
@@ -531,34 +534,36 @@ void CamServer::RequestReceived( Connection *connection )
 
 				if( text_compresslevel )
 				{
-					html = '!';
 #if 1
-					uint8 *compressed = new uint8[10+(html.Length()*101/100+12)+8];
-					uLongf compressed_len;
-					if( compress2((Bytef*)compressed+10,&compressed_len, (Bytef*)html.String(), html.Length(), text_compresslevel) == Z_OK )
+					uLongf compressed_len = 8+(html.Length()*101/100+12)+4;
+					uint8 *compressed = new uint8[compressed_len];
+					if( compress2((Bytef*)compressed+8,&compressed_len, (Bytef*)html.String(), html.Length(), text_compresslevel) == Z_OK )
 					{
+						compressed_len -= 4;
+
 						compressed[0] = 0x1f; // magic
 						compressed[1] = 0x8b; // magic
 						compressed[2] = 8; // deflate
 						compressed[3] = 0x00; // text file
 						compressed[4] = compressed[5] = compressed[6] = compressed[7] = 0; // modify time
-						compressed[8] = 0; // xflags
-						compressed[9] = 3; // oscode
-
+						compressed[8] = 0x00; // xflags
+						compressed[9] = 0xff; // oscode
+						
 						uLong crc = crc32( 0L, Z_NULL, 0 );
-						crc = crc32( crc, compressed+10, compressed_len );
+						crc = crc32( crc, (Bytef*)html.String(), html.Length() );
 
-						compressed[10+compressed_len+0] = (crc>>0)&0xff;
-						compressed[10+compressed_len+1] = (crc>>8)&0xff;
-						compressed[10+compressed_len+2] = (crc>>16)&0xff;
-						compressed[10+compressed_len+3] = (crc>>24)&0xff;
-						compressed[10+compressed_len+4] = (html.Length()>>0)&0xff;
-						compressed[10+compressed_len+5] = (html.Length()>>8)&0xff;
-						compressed[10+compressed_len+6] = (html.Length()>>16)&0xff;
-						compressed[10+compressed_len+7] = (html.Length()>>24)&0xff;
+						compressed[8+compressed_len+0] = (crc>>0)&0xff;
+						compressed[8+compressed_len+1] = (crc>>8)&0xff;
+						compressed[8+compressed_len+2] = (crc>>16)&0xff;
+						compressed[8+compressed_len+3] = (crc>>24)&0xff;
+						compressed[8+compressed_len+4] = (html.Length()>>0)&0xff;
+						compressed[8+compressed_len+5] = (html.Length()>>8)&0xff;
+						compressed[8+compressed_len+6] = (html.Length()>>16)&0xff;
+						compressed[8+compressed_len+7] = (html.Length()>>24)&0xff;
 					
-						BString xheader = "Content-Encoding: x-gzip\n";
-						connection->SendData( compressed, 10+compressed_len+8, "text/html", &xheader );
+						BString xheader = "Content-encoding: gzip\n";
+						connection->SendData( compressed, 8+compressed_len+8, "text/html", &xheader );
+						printf( "Sending compressed %ld -> %ld\n", html.Length(), 8+compressed_len+8 );
 #else
 #endif
 					}
@@ -630,7 +635,13 @@ void CamServer::RequestReceived( Connection *connection )
 			html << "RCX Battery: " << battery << "v<br>\n";
 			html << "NQC <a href=camctrl.nqc>Source</a> for the RCX.\n<br>";
 			html << "Text version: <a href=text_60x30.html>60x30</a> <a href=text_78x39.html>78x39</a> <a href=text_120x60.html>120x60</a> <a href=text_176x88.html>176x88</a> <a href=text_352x176.html>352x176</a>\n<br>";
-			html << "BW Text version: <a href=bwtext_60x30.html>60x30</a> <a href=bwtext_78x39.html>78x39</a> <a href=bwtext_120x60.html>120x60</a> <a href=bwtext_176x88.html>176x88</a> <a href=bwtext_352x176.html>352x176</a>\n";
+			html << "Compressed Text version: <a href=text_60x30_5.html>60x30</a> <a href=text_78x39_5.html>78x39</a> <a href=text_120x60_5.html>120x60</a> <a href=text_176x88_5.html>176x88</a> <a href=text_352x176_5.html>352x176</a>\n<br>";
+			html << "BW Text version: <a href=bwtext_60x30.html>60x30</a> <a href=bwtext_78x39.html>78x39</a> <a href=bwtext_120x60.html>120x60</a> <a href=bwtext_176x88.html>176x88</a> <a href=bwtext_352x176.html>352x176</a>\n<br>";
+			html << "Compressed BW Text version: <a href=bwtext_60x30_5.html>60x30</a> <a href=bwtext_78x39_5.html>78x39</a> <a href=bwtext_120x60_5.html>120x60</a> <a href=bwtext_176x88_5.html>176x88</a> <a href=bwtext_352x176_5.html>352x176</a>\n";
+
+			html << "<hr>\n";
+
+			html << "The sources for this: <a href=http://sourceforge.net/project/?group_id=554>BeCPiA WebCam driver</a> <a href=http://sourceforge.net/project/?group_id=724>Junkyard</a>.\n";
 
 			html << "<hr>\n";
 
