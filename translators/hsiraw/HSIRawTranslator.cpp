@@ -36,9 +36,18 @@
 #include <support/String.h>
 #include <translation/TranslatorAddOn.h>
 //-------------------------------------
-#include "dle/DamnLayoutEngine.h"
+//#include "dle/DamnLayoutEngine.h"
+#include "dle/AutoScrollView.h"
+#include "dle/BButton.h"
+#include "dle/BCheckBox.h"
+#include "dle/BStringView.h"
+#include "dle/RootView.h"
+#include "dle/Space.h"
+#include "dle/Split.h"
+
 #include "misc/InstallTranslator.h"
 #include "misc/Settings.h"
+//-------------------------------------
 #include "HSIRawTranslator.h"
 //-----------------------------------------------------------------------------
 /*
@@ -236,7 +245,7 @@ status_t Translate(
 
 //-----------------------------------------------------------------------------
 
-class ConfigView : public damn::RootView
+class ConfigView : public dle::RootView
 {
 public:
 					ConfigView();
@@ -246,60 +255,68 @@ public:
 			void	AttachedToWindow();
 
 private:
-	damn::BButton	*fRegMimeButton;
-	damn::BCheckBox	*fConvertCB;
+	dle::BButton	*fRegMimeButton;
+	dle::BCheckBox	*fConvertCB;
 };
 
 ConfigView::ConfigView() :
-	damn::RootView( BRect(0,0,100-1,100-1), B_FOLLOW_ALL, 0 )
+	dle::RootView( BRect(0,0,100-1,100-1), B_FOLLOW_ALL, 0 )
 {
-	damn::BStringView *sv;
-	damn::Space *sp;
+	dle::BStringView *sv;
+	dle::Space *sp;
 
-	damn::AutoScrollView *asv = new damn::AutoScrollView;
-
-		damn::VSplit *vs = new damn::VSplit( 1 );
-	
-			sv = new damn::BStringView( "heading", translatorName );
+	dle::AutoScrollView *asv = new dle::AutoScrollView;
+	{
+		dle::VSplit *vs = new dle::VSplit();
+		{
+			sv = new dle::BStringView( translatorName );
 			sv->SetFont( be_bold_font );
 			vs->AddObject( sv, 1.0f );
 	
-			BString version; version<<"HSI Raw image translator v"<<(int32)VERSION_MAJOR<<"."<<(int32)VERSION_MINOR<<"."<<(int32)VERSION_REVISION<<"  "<<__DATE__;
-			sv = new damn::BStringView( "version", version.String() );
+			BString version; version<<"v"<<(int32)VERSION_MAJOR<<"."<<(int32)VERSION_MINOR<<"."<<(int32)VERSION_REVISION<<"  "<<__DATE__;
+			sv = new dle::BStringView( version.String() );
 			vs->AddObject( sv, 1.0f );
 	
-			sv = new damn::BStringView( "copyright", B_UTF8_COPYRIGHT "'99 by Jesper Hansen (jesper@funcom.com)" );
-			vs->AddObject( sv, 1.0f );
+			dle::VSplit *vs2 = new dle::VSplit();
+			vs2->SetInner( 0 );
+			{
+				sv = new dle::BStringView( B_UTF8_COPYRIGHT "1999-2000 by Jesper Hansen" );
+				vs2->AddObject( sv, 1.0f );
+
+				sv = new dle::BStringView( "(jesper@funcom.com)" );
+				vs2->AddObject( sv, 1.0f );
+			}
+			vs->AddObject( vs2, 1.0f );
 	
-			sp = new damn::Space();
+			sp = new dle::Space();
 			vs->AddObject( sp, 1.0f );
 	
-			fConvertCB = new damn::BCheckBox( "bw", "Read BW/Gray images as truecolor", new BMessage('rd32') );
+			fConvertCB = new dle::BCheckBox( "Read BW/Gray images as truecolor", new BMessage('rd32') );
 			fConvertCB->SetValue( gSettings.GetBool("converto32bit",default_converto32bit) );
 			vs->AddObject( fConvertCB, 1.0f );
 	
-			sp = new damn::Space();
+			sp = new dle::Space();
 			vs->AddObject( sp, 5.0f );
 	
-			fRegMimeButton = new damn::BButton( "regmime", "Register mimetype", new BMessage('regm') );
+			fRegMimeButton = new dle::BButton( "Register mimetype", new BMessage('regm') );
 			vs->AddObject( fRegMimeButton, 0.5f );
 	
-			sp = new damn::Space();
+			sp = new dle::Space();
 			vs->AddObject( sp, 5.0f );
 	
-			damn::HSplit *hs2 = new damn::HSplit( 0 );
-				sp = new damn::HSpace();
+			dle::HSplit *hs2 = new dle::HSplit();
+				sp = new dle::HSpace();
 				hs2->AddObject( sp, 1.0f );
-	//			sv = new damn::BStringView( "gpl", "Released under the GPL" );
+	//			sv = new dle::BStringView( "gpl", "Released under the GPL" );
 	//			hs2->AddObject( sv, 1.0f );
-//				fGPLButton = new damn::BButton( "showgpl", "Released under the GPL" B_UTF8_ELLIPSIS, new BMessage('sgpl') );
+//				fGPLButton = new dle::BButton( "showgpl", "Released under the GPL" B_UTF8_ELLIPSIS, new BMessage('sgpl') );
 //				hs2->AddObject( fGPLButton, 0.5f );
-				sp = new damn::HSpace( 8,8 );
+				sp = new dle::HSpace( 8,8 );
 				hs2->AddObject( sp, 1.0f );
 			vs->AddObject( hs2, 1.0f );
-
+		}
 		asv->AddObject( vs );
-	
+	}	
 	AddObject( asv );
 }
 
@@ -336,7 +353,7 @@ void ConfigView::MessageReceived( BMessage *msg )
 void ConfigView::AttachedToWindow()
 {
 //	SetViewColor( Parent()->ViewColor() );
-	damn::RootView::FrameResized( Bounds().Width()+1, Bounds().Height()+1 );
+	dle::RootView::FrameResized( Bounds().Width()+1, Bounds().Height()+1 );
 
 	fRegMimeButton->SetTarget( this );
 	fConvertCB->SetTarget( this );

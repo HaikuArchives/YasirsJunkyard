@@ -1,0 +1,44 @@
+%install! == <<
+	%HSIRawTranslator > /boot/home/config/add-ons/Translators/HSIRawTranslator
+	
+%HSIRawTranslator == %HSIRawTranslator.c.sm \
+	+inc_sp=(../../common) \
+	+lib=(../../common/dle%dle.a) (../../common/misc%misc.a) -lbe \
+	+optimize=3 \
+	+resource=(HSIRawTranslatorX86.rsrc) \
+	:exe
+
+#	+c_flags=-include\ Version.h \
+
+%HSIRawTranslator.c.sm == <<
+	HSIRawTranslator.cpp
+	HSIRead.cpp
+	HSIWrite.cpp
+	Palettes.cpp
+
+#Version.h == version.txt +cmd='sed \'s/\\([0-9]*\\)\.\\([0-9]\\)*\.\\([0-9]\\)/\
+#\\/\\/ Machine generated, do not editX#\
+#define VERSION \"\\1.\\2.\\3\"X#\
+#define VERSION_MAJOR \\1X#\
+#define VERSION_MINOR \\2X#\
+#define VERSION_REVISION \\3X\
+#/\' | tr X \\\\n' :stdout
+
+Version.h == <<
+// Machine generated, do not edit
+#define VERSION 0.9.1
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 9
+#define VERSION_REVISION 1
+
+
+
+%makezip! == <<
+	HSIRAWVERSION = !0.9.1
+	%HSIRaw.zip.sm +virtdir='HSIRaw_'$HSIRAWVERSION :zip > 'HSIRaw_'$HSIRAWVERSION'.zip'
+
+%HSIRaw.zip.sm == <<
+	HSIRawTranslator
+	documentation%hsiraw_doc.html
+	documentation/hsirawconfig.png
+

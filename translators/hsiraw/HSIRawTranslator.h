@@ -33,6 +33,7 @@
 #include <translation/TranslatorAddOn.h>
 #include <translation/TranslatorFormats.h>
 //-------------------------------------
+#include "Version.h"
 //-----------------------------------------------------------------------------
 
 #define HSIRAW_TYPE 'HRaw'
