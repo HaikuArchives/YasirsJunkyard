@@ -1,0 +1,18 @@
+cd /junkyard/textimage/ ; . ../setupenv.sh
+--------------------------------------------------------------------------------
+rm -rfv ../build #clean
+bake bin/textimage
+bake install
+--------------------------------------------------------------------------------
+TEXTIMAGEBIN=../build/BeOS-BePC/beos_intel_gnupro/textimage/bin/textimage
+$TEXTIMAGEBIN "ShowImage" /tmp/image.jpg --xsize=128 --ysize=32 --fontfamily="Dutch801 Rm BT" --fontstyle="Bold" --fontsize=32 -v --backcolor=#000000 --textcolor=#ffffff
+
+bake bin/textimage
+$TEXTIMAGEBIN "Hsi-Raw" /tmp/image.png --fontfamily=Hirosh --fontsize=16 -v --backcolor=#737b9c --textcolor=#b3bbdc --imageformat=image/png
+ShowImage /tmp/image.png
+
+$TEXTIMAGEBIN "Hsi-Raw" /tmp/image.png --halign=left --xsize=128 --fontfamily=Hirosh --fontsize=16 -v --backcolor=#737b9c --textcolor=#b3bbdc --imageformat=image/png
+$TEXTIMAGEBIN --help
+$TEXTIMAGEBIN --listfonts
+$TEXTIMAGEBIN --listformats
+--------------------------------------------------------------------------------

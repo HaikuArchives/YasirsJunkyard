@@ -1,0 +1,11 @@
+bin/scaleimage -> executable:
+	[
+		Main.cpp^object:static
+		
+		../../common/gfx/lib/libgfx.a
+	]
+	(
+	)
+{
+	LDFLAGS += -lbe -ltranslation
+}

@@ -1,0 +1,22 @@
+bin/textimage -> executable:
+	[
+		Main.cpp^object:static
+		
+		../../common/misc/lib/libmisc.a
+		../../common/gfx/lib/libgfx.a
+	]
+	(
+	)
+{
+	LDFLAGS += -lbe -ltranslation
+}
+
+install ::
+	(
+		bin/textimage^executable:
+	)
+{
+	<<<
+ 		copyattr -d $(_builddir_)/bin/textimage /boot/home/config/bin
+	>>>
+}

@@ -1,0 +1,46 @@
+all -> dummy:
+	[
+		bin/MakeIconThumb^executable:
+		addon/MakeIconThumb^executable:
+	]
+{
+}
+
+bin/MakeIconThumb -> executable:
+	[
+		Main.cpp^object:static
+		MIApp.cpp^object:static
+		MIWin.cpp^object:static
+		ProgressBar.cpp^object:static
+		MakeIcon.cpp^object:static
+		
+		../../common/gfx/lib/libgfx.a
+
+		MakeIconThumbX86.rsrc
+	]
+	(
+	)
+{
+	LDFLAGS += -lbe -ltranslation
+}
+
+addon/MakeIconThumb -> executable:
+	[
+		TrackerAddOn.cpp^object:static
+	]
+	(
+	)
+{
+	LDFLAGS += -lbe
+}
+
+install ::
+	(
+		all^dummy:
+	)
+{
+	<<<
+		copyattr -d $(_builddir_)/bin/MakeIconThumb /boot/home/config/bin
+		copyattr -d $(_builddir_)/addon/MakeIconThumb /boot/home/config/add-ons/Tracker/MakeIconThumb-I
+	>>>
+}

@@ -1,0 +1,47 @@
+all -> dummy:
+	[
+		bin/SimpleSlide^executable:
+		addon/SimpleSlide^executable:
+	]
+{
+}
+
+bin/SimpleSlide -> executable:
+	[
+		Main.cpp^object:static
+		SSApp.cpp^object:static
+		SSWin.cpp^object:static
+		BitmapView.cpp^object:static
+		
+#		../../common/dle/lib/liblayoutengine.a
+#		../../common/misc/lib/libmisc.a
+
+		SimpleSlideX86.rsrc
+	]
+	(
+	)
+{
+	LDFLAGS += -lbe -ltranslation
+}
+
+addon/SimpleSlide -> executable:
+	[
+		TrackerAddOn.cpp^object:static
+	]
+	(
+	)
+{
+	LDFLAGS += -lbe
+}
+
+install ::
+	(
+		bin/SimpleSlide^executable:
+		addon/SimpleSlide^executable:
+	)
+{
+	<<<
+		copyattr -d $(_builddir_)/bin/SimpleSlide /boot/home/config/bin
+		copyattr -d $(_builddir_)/addon/SimpleSlide /boot/home/config/add-ons/Tracker/SimpleSlide-S
+	>>>
+}
