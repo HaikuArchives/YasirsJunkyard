@@ -1,0 +1,9 @@
+lib/libmisc.a -> library:static
+	[
+		InstallTranslator.cpp^object:static
+		Settings.cpp^object:static
+		MimeUtils.cpp^object:static
+	]
+{
+}
+

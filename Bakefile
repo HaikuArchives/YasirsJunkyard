@@ -1,0 +1,51 @@
+c_scanner += $(_project_)/common $(_project_)/kerneldrivers
+php_scanner += $(_project_)/documentation
+
+all -> dummy:
+	[
+		common/dle/lib/liblayoutengine.a
+		common/dle/tests/all^dummy:
+
+		common/misc/lib/libmisc.a
+
+		common/misc/lib/libgfx.a
+		common/misc/tests/all^dummy:
+
+		common/httpserver/lib/libhttpserver.a
+		common/httpserver/tests/all^dummy:
+		
+		translators/hsiraw/bin/HSIRawTranslator^executable:
+		translators/amigaicon/bin/AmigaIconTranslator^executable:
+
+		gfx/simpleslide/all^dummy:
+		gfx/makeiconthumb/all^dummy:
+		gfx/scaleimage/bin/scaleimage^executable:
+		gfx/textimage/bin/textimage^executable:
+
+		kerneldrivers/w8378x/bin/w8378x^kerneldriver:
+		kerneldrivers/w8378x/tests/bin/test^executable:
+		kerneldrivers/optrex/bin/optrex^kerneldriver:
+		kerneldrivers/optrex/tests/bin/test^executable:
+
+		utils/optrexcpumon/bin/optrexcpumon^executable:
+	]
+{
+}
+
+install ::
+	(
+		translators/hsiraw/install
+		translators/amigaicon/install
+
+		gfx/simpleslide/install
+		gfx/makeiconthumb/install
+		gfx/textimage/install
+
+		kerneldrivers/w8378x/install
+		kerneldrivers/optrex/install
+	)
+{
+	<<<
+	>>>
+}
+

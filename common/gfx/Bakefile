@@ -1,0 +1,10 @@
+lib/libgfx.a -> library:static
+	[
+		BitmapScale.cpp^object:static
+		BitmapConvert.cpp^object:static
+		WriteGifImage.cpp^object:static
+		TranslatorUtils.cpp^object:static
+	]
+{
+}
+

@@ -1,0 +1,26 @@
+all -> dummy:
+	[
+		bin/ScaleTest^executable:
+		bin/WriteGifTest^executable:
+	]
+{
+}
+
+bin/ScaleTest -> executable:
+	[
+		ScaleTest.cpp^object:static
+		../lib/libgfx.a
+	]
+{
+	LDFLAGS += -lbe
+}
+
+bin/WriteGifTest -> executable:
+	[
+		WriteGifTest.cpp^object:static
+		../lib/libgfx.a
+	]
+{
+	LDFLAGS += -lbe
+}
+

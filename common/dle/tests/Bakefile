@@ -1,0 +1,24 @@
+#c_scanner += ../../
+
+all -> dummy:
+	[
+		bin/Test1^executable:
+	]
+{
+}
+
+bin/Test1 -> executable:
+	[
+		Test1.cpp^object:static
+		../lib/liblayoutengine.a
+	]
+{
+	LDFLAGS += -lbe
+	<<<
+		echo $(_sourcedir_)
+		echo $(_builddir_)
+		echo $(_project_)
+		echo $(_build_) 
+	>>>
+}
+

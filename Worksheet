@@ -1,0 +1,35 @@
+cd /junkyard ; . setupenv.sh
+--------------------------------------------------------------------------------
+rm -rfv build #clean
+bake --depends all
+bake all | sed "s/\/boot\/home\/SFProjects\/yasirsjunkyard\///"
+bake install
+bake all
+--------------------------------------------------------------------------------
+#Common
+bake common/gfx/tests/all
+build/BeOS-BePC/beos_intel_gnupro/common/gfx/tests/bin/WriteGifTest /tmp/delme.gif && /system/Tracker /tmp
+--------------------------------------------------------------------------------
+#Test SimpleHttpServer
+(cd common/httpserver/tests/ ; ../../../build/BeOS-BePC/beos_intel_gnupro/common/httpserver/tests/bin/SimpleFileServer)
+--------------------------------------------------------------------------------
+export CVS_RSH=sfssh
+cvs -n update
+--------------------------------------------------------------------------------
+#Project page:
+NetPositive http://sourceforge.net/project/admin/?group_id=724
+
+#Shell account:
+ssh -l Yasir yasirsjunkyard.sourceforge.net
+
+#Cron update:
+NetPositive http://sourceforge.net/docs/site/
+
+#Doc:
+NetPositive http://sfdocs.sourceforge.net/sfdocs/site/user/newproject-howto.php
+
+#cvs -z3 -dYasir@cvs.yasirsjunkyard.sourceforge.net:/cvsroot/yasirsjunkyard co .
+--------------------------------------------------------------------------------
+sfscp ~/Desktop/bake.zip yasir@yasirsjunkyard.sourceforge.net:/home/groups/ftp/pub/yasirsjunkyard
+sfscp ~/Desktop/bake_n_stuff.zip  yasir@yasirsjunkyard.sourceforge.net:/home/groups/ftp/pub/yasirsjunkyard/bake_src.zip
+--------------------------------------------------------------------------------

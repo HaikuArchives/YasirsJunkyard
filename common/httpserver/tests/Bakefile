@@ -1,0 +1,16 @@
+all -> dummy:
+	[
+		bin/SimpleFileServer^executable:
+	]
+{
+}
+
+bin/SimpleFileServer -> executable:
+	[
+		SimpleFileServer.cpp^object:static
+		../lib/libhttpserver.a
+	]
+{
+	LDFLAGS += -lbe -lnetapi
+}
+

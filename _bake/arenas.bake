@@ -1,0 +1,6 @@
+arena BeOS-BePC :
+	beos_intel_gnupro
+<<<
+	node00		(3)
+>>>
+

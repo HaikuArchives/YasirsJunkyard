@@ -1,0 +1,215 @@
+# first, we define our types.
+# they are in the form of:
+#
+#   type <typename><:flavor> [ ext list ] (scanner_name)
+#
+#  the (scanner_name) is optional
+#
+
+type header: [h] (c_scanner)
+
+type cplusplus: [cpp]  (c_scanner)
+type c:         [c] (c_scanner)
+
+type object:static [o]
+type object:shared [oso]
+type object:nopic [onp]
+
+type library:static [a]
+type library:shared [so]
+
+type resource:	[rsrc]
+
+type executable: [] 
+type kerneldriver: [] 
+
+type php3: [php3] (php_scanner)
+type html: [html]
+type htmldoc: [html]
+
+type htmldoczip: [zip]
+type phpdoczip: [zip]
+type binarc: [zip]
+
+type image:jpeg [jpg]
+type image:gif [gif]
+type image:png [png]
+
+type genimagecfg: [gic]
+
+type dummy: [] 
+
+#
+# now, we tell bake how those types come into 
+# being, and become other things.
+#
+
+transform cplusplus (compile)
+{
+	-> [object:static]
+
+	CFLAGS += $(CFLAGS_STATIC)
+
+	<<<
+		$(CC) -c $(_sources_) $(CFLAGS) -o $(0)
+	>>>
+}
+
+transform c (compile)
+{
+	-> [object:nopic]
+
+	CFLAGS += $(CFLAGS_KERNEL)
+
+	<<<
+		$(CC) -c $(_sources_) $(CFLAGS) -o $(0)
+	>>>
+}
+
+transform cplusplus (compile)
+{
+	-> [object:shared]
+
+	CFLAGS += $(CFLAGS_STATIC)
+
+	<<<
+		$(CC) -c $(_sources_) $(CFLAGS) -o $(0)
+	>>>
+}
+
+transform php3
+{
+	-> [htmldoc:] ^$(_filebase_)_doc.html^
+	
+	<<<
+		sh -c "mkdir /tmp/phptmp_$$ && \
+			echo include_path=$(phpincludepath) >/tmp/phptmp_$$/php3.ini && \
+			(export $(phpexports) PHPGENDOC=1 && \
+			$(PHP) -c/tmp/phptmp_$$ $(phpflags) -f$(_sources_) > $(0) ) && \
+			mimeset -F $(_filebase_)_doc.html && \
+			rm /tmp/phptmp_$$/php3.ini && rmdir /tmp/phptmp_$$"
+	>>>
+}
+
+transform php3
+{
+	-> [html:]
+	
+	<<<
+		sh -c "mkdir /tmp/phptmp_$$ && \
+			echo include_path=$(phpincludepath) >/tmp/phptmp_$$/php3.ini && \
+			(export $(phpexports) && \
+			$(PHP) -c/tmp/phptmp_$$ $(phpflags) -f$(_sources_) > $(0) ) && \
+			mimeset -F $(0) && \
+			rm /tmp/phptmp_$$/php3.ini && rmdir /tmp/phptmp_$$"
+	>>>
+}
+
+
+accumulate image:png (genimage)
+{
+	[ genimagecfg: ]
+
+	<<<
+		sh -c "textimage --imageformat=image/png $\(cat $(_sources_)) $(STRING) $(0)
+	>>>
+}
+
+accumulate htmldoczip: (zip)
+{
+	[ html: image:gif image:jpeg image:png ] 
+
+	<<<
+		zip -9jq $(0) $(_sources_)
+	>>>
+}
+
+accumulate phpdoczip: (zip)
+{
+	[ php3: image:gif image:jpeg image:png ] 
+
+	<<<
+		zip -9jq $(0) $(_sources_)
+	>>>
+}
+
+
+accumulate library:static (link)
+{
+	[ object:static ] 
+
+	LDFLAGS += $(LDFLAGS_STATIC)
+
+	<<<
+		$(AR) -cru $(0) $(_sources_)
+	>>>
+}
+
+accumulate library:shared (link)
+{
+	[ object:shared ] 
+
+	LDFLAGS += $(LDFLAGS_SHARED) -soname=$(0)
+
+	<<<
+		$(LD) -o $(0) $(_sources_) $(LDFLAGS)
+	>>>
+}
+
+accumulate executable: (link)
+{
+	[ object:shared object:static library:static resource: ]
+
+	LDFLAGS += $(LDFLAGS_EXECUTABLE)
+
+	OBJS = $(filter \.\(o\|a\|shobj\)$, $(_sources_))
+	RSRCS = $(filter \.rsrc$, $(_sources_))
+
+	<<<
+		$(LD) -o $(0) $(OBJS) $(LDFLAGS)
+		sh -c "if [ '$(RSRCS)' != '' ]; then $(XRES) -o $(0) $(RSRCS); fi"
+		$(MIMESET) $(0)
+	>>>
+}
+
+accumulate kerneldriver: (link)
+{
+	[ object:nopic ]
+
+	LDFLAGS += $(LDFLAGS_KERNEL)
+
+	OBJS = $(filter \.\(o\|a\|shobj\)$, $(_sources_))
+	RSRCS = $(filter \.rsrc$, $(_sources_))
+
+	<<<
+		$(LD) -o $(0) $(_sources_) $(LDFLAGS)
+		$(MIMESET) $(0)
+	>>>
+}
+
+accumulate binarc: (zip)
+{
+	[ executable: htmldoc: image:gif image:jpeg image:png ]
+
+	<<<
+		echo sh -c "\
+			dirname=$(echo $(0) | sed 's/\(.*\)\..*/\1/') && \
+			rm -rf /tmp/$dirname && \
+			mkdir -p /tmp/$dirname && \
+	 		copyattr  $(_sources_) /tmp/$dirname && \
+	 		mimeset -F /tmp/$dirname && \
+	 		rm $(0) >/dev/null 2>&1 && \
+	 		(cd /tmp && zip -9rq $(0) $dirname) "
+	>>>
+}
+
+
+
+accumulate dummy: (dummy2)
+{
+	[ dummy: executable: kerneldriver: library:static html: htmldoc: image:png ]
+	<<<
+		touch $(0)
+	>>>
+}
+

@@ -1,0 +1,8 @@
+c_scanner 
+    <<<#include[^\"]*\"([^\"]*)\">>>
+
+php_scanner 
+    <<<include[^\"]*\"([^\"]*)\">>>
+
+no_scanner
+

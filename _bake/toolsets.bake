@@ -1,0 +1,62 @@
+toolset beos_intel_gnupro
+{
+#-----------------------------------------------------------------------------
+
+	CC				= gcc
+
+	CFLAGS			+= $(include_path) -O3
+#	CFLAGS			+= $(include_path) -g
+
+	#warnings:
+	CFLAGS			+= -Wall -Wno-multichar -Wno-ctor-dtor-privacy
+	CFLAGS			+= $(foreach define, $(DEFINES), "-D$(define) ")
+
+	CFLAGS_STATIC	+= 
+
+	CFLAGS_SHARED	+= 
+
+	CFLAGS_APP		+= 
+
+	CFLAGS_KERNEL	+= -D_KERNEL_MODE=1 -no-fpic
+
+
+	c_scanner		+= $(_sourcedir_) $(_builddir_) $(_project_) $(_build_) 
+ 
+	include_path	+= $(foreach path, $(c_scanner), "-I$(path) ")
+
+#-----------------------------------------------------------------------------
+
+	PHP				= php
+	
+	phpflags		+= -q
+
+	phpexports		+= PHPGENHTML=1
+
+	php_scanner		+= $(_sourcedir_) $(_builddir_) $(_project_) $(_build_) 
+
+	phpincludepath	+= .$(foreach path, $(php_scanner), ":$(path)")
+
+#-----------------------------------------------------------------------------
+
+	XRES			= xres
+
+	MIMESET			= mimeset
+
+#-----------------------------------------------------------------------------
+
+	AR				= ar
+	
+#-----------------------------------------------------------------------------
+
+	LD				= gcc
+	
+	LDFLAGS			+=
+	
+	LDFLAGS_SHARED	+= -nostart -Xlinker 
+
+	LDFLAGS_APP		+= -Xlinker -soname=_APP_
+
+	LDFLAGS_KERNEL	+= -nostdlib /boot/develop/lib/x86/_KERNEL_
+
+#-----------------------------------------------------------------------------
+}

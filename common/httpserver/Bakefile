@@ -1,0 +1,8 @@
+lib/libhttpserver.a -> library:static
+	[
+		HttpServer.cpp^object:static
+		NetStringEndpoint.cpp^object:static
+	]
+{
+}
+
