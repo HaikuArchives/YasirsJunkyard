@@ -34,6 +34,7 @@
 //-----------------------------------------------------------------------------
 
 #define VERBOSE
+#define SENDRECV_VERBOSE
 
 #define RCX_OP_PING				0x10
 #define RCX_OP_BATTERYVOLTAGE	0x30
@@ -103,7 +104,7 @@ ssize_t damn::RcxComm::Write( const void *buf, size_t count )
 
 status_t damn::RcxComm::RecvBuffer( void *data, size_t datalength )
 {
-	int retrycnt = 5;
+	int retrycnt = 3;
 	bigtime_t timeout = 1000000 / (2400/(10+10));
 	std::deque<uint8> recvbuffer;
 	while( true )
@@ -124,7 +125,7 @@ retry:
 		}
 
 		fSerPort.SetTimeout( B_INFINITE_TIMEOUT );
-		
+retryheader:		
 		// find header:
 		while( recvbuffer.size() >= 3 )
 		{
@@ -144,30 +145,65 @@ retry:
 		// decode data:
 		uint decodelen = 0;
 		uint8 checksum = 0;
+		uint decodelen_valid = -1;
+		uint decodelen_valid_checksum;
+		
+#ifdef VERBOSE
+		fprintf( stderr, "D>" );
+		for( int i=0; i<recvbuffer.size(); i++ )
+		{
+			if( i!=0 )
+				fprintf( stderr, " " );
+			fprintf( stderr, "%02X", recvbuffer[i] );
+		}
+		fprintf( stderr, "\n" );
+#endif
+
 		for( uint i=3; i<recvbuffer.size()-3; i+=2 )
 		{
 //			fprintf( stderr, ">>%d\n", i );
 			decodelen = (i-3)/2;
+
 			if( recvbuffer.size()-i>=5 && recvbuffer[i+2]==0x55 && recvbuffer[i+3]==0xff && recvbuffer[i+4]==0x00 )
 				break;
-
+				
 			if( i==3 && recvbuffer[i]==fLastSendCommand )
 			{
-				recvbuffer.pop_front();
+				for( int i=0; i<3+2+2; i++ )
+					recvbuffer.pop_front();
 #ifdef VERBOSE
-//				fprintf( stderr, "RcxComm::RecvBuffer(): weird IR reflection, retrying...\n" );
+				fprintf( stderr, "RcxComm::RecvBuffer(): weird IR reflection, retrying...\n" );
 #endif
-				goto retry;
+				goto retryheader;
 			}
 		
 			if( recvbuffer[i] != (recvbuffer[i+1]^0xff) )
 			{
-				recvbuffer.pop_front();
+				if( decodelen_valid >= 0 )
+				{
 #ifdef VERBOSE
-				fprintf( stderr, "RcxComm::RecvBuffer(): got bogus data, retrying...\n" );
+					fprintf( stderr, "RcxComm::RecvBuffer(): found early checksum, done...\n" );
 #endif
-				goto retry;
+					decodelen = decodelen_valid;
+					checksum = decodelen_valid_checksum;
+					break;
+				}
+				else
+				{
+					recvbuffer.pop_front();
+#ifdef VERBOSE
+					fprintf( stderr, "RcxComm::RecvBuffer(): got bogus data, retrying...\n" );
+#endif
+					goto retry;
+				}
 			}
+
+			if( recvbuffer.size()-i>=2 && recvbuffer[i]==checksum )
+			{
+				decodelen_valid = decodelen-1;
+				decodelen_valid_checksum = checksum;
+			}
+
 			if( decodelen < datalength )
 			{
 				((uint8*)data)[decodelen] = recvbuffer[i];
@@ -177,7 +213,7 @@ retry:
 		}
 		decodelen++;
 		// check checksum:
-//		fprintf( stderr, "%d [%d %d] [%d]\n", decodelen, recvbuffer[3+decodelen*2], recvbuffer[3+decodelen*2+1]^0xff, checksum );
+		fprintf( stderr, "%d [%02X %02X] [%02X]\n", decodelen, recvbuffer[3+decodelen*2], recvbuffer[3+decodelen*2+1]^0xff, checksum );
 		if( recvbuffer[3+decodelen*2]!=(recvbuffer[3+decodelen*2+1]^0xff) || checksum!=recvbuffer[3+decodelen*2] )
 		{
 			// not enough data, or a bad checksum, there is no way to know :(
@@ -225,7 +261,7 @@ status_t damn::RcxComm::SendCommand( const void *senddata, size_t senddatalength
 {
 	uint8 lastcommand = fLastSendCommand;
 
-	int retrycnt = 10;
+	int retrycnt = 3;
 	while( retrycnt-- > 0 )
 	{
 		fSerPort.ClearInput();

@@ -46,7 +46,7 @@
 
 #ifdef SAVEFRAMES
 int saveinterval = 60;
-const char *savepath = "/boot/home";
+const char *savepath = "/boot/home/TechCam";
 //const char *linkfile = "/boot/home/public_html/webcam.jpg";
 #endif
 
@@ -201,6 +201,10 @@ CamApp::CamApp() :
 	fBitmap = NULL;
 	fServer = NULL;
 	
+	fRCXBatteryLevel = 0.0f;
+	fLastRCXBatteryLevel = 0;
+	
+	
 	fRCX = NULL;
 }
 
@@ -322,7 +326,7 @@ void CamApp::WorkThread()
 				view->SetLowColor( 0,0,0 );
 				fBitmap->ChildAt(0)->DrawString( string, BPoint(351-strwidth,287-strheight+fontheight.ascent) );
 
-				view->Flush();
+				view->Sync();
 #endif
 				fBitmap->Unlock();
 			}
@@ -429,7 +433,7 @@ void CamServer::RequestReceived( Connection *connection )
 			}
 					
 			snooze( 1000000 ); // FIXME: wait for RCX reply instead...
-			connection->SendRedirection( "/", false );
+			connection->SendRedirection( "./", false );
 		}
 //		if( connection->GetArg()=="/" || connection->GetArg()=="/index.html" )
 		else if( connection->GetArg()=="/" || connection->GetArg().FindFirst(".html") >= 0 )
@@ -460,14 +464,14 @@ void CamServer::RequestReceived( Connection *connection )
 
 			html << "<hr>\n";
 			
-			html << "<center>\n";
+			html << "<center width=5%>\n";
 			html << "<table cols=3 rows=3 border=0 cellspacing=0 cellpadding=0>\n";
 			html <<	"<tr>\n";
 			html <<	"<td></td>\n";
 			html <<	"<td align=center valign=center><form><input type=\"submit\" name=\"pan\" value=\"up\"></form></td>\n";
 			html <<	"<td></td>\n";
 			html <<	"</tr>\n";
-			html <<	"<tr>\n";
+			html <<	"<tr valign=center>\n";
 			html <<	"<td align=center valign=center><form><input type=\"submit\" name=\"pan\" value=\"left\"></form></td>\n";
 			html <<	"<td align=center valign=center>pan</td>\n";
 			html <<	"<td align=center valign=center><form><input type=\"submit\" name=\"pan\" value=\"right\"></form></td>\n";
@@ -481,8 +485,13 @@ void CamServer::RequestReceived( Connection *connection )
 			html << "</center>\n";
 
 			html << "<hr>\n";
+		
+			html << "<b>Note: the camera-controll unit is currently nonfunctionable...</b>";
 
-			html << "RCX Battery: " << battery << "v\n";
+			html << "<hr>\n";
+
+			html << "RCX Battery: " << battery << "v<br>\n";
+			html << "NQC <a href=camctrl.nqc>Source</a> for the RCX.\n";
 
 			html << "<hr>\n";
 
@@ -504,6 +513,23 @@ void CamServer::RequestReceived( Connection *connection )
 				roster->Translate( &stream, NULL, NULL, &bitmapfile, 'JPEG' );
 	
 				connection->SendData( bitmapfile.Buffer(), bitmapfile.BufferLength(), "image/jpeg" );
+			}
+		}
+		else if( connection->GetArg().FindFirst(".nqc") >= 0 )
+		{
+			BFile file( "camctrl.nqc", B_READ_ONLY );
+			if( file.InitCheck() >= B_OK )
+			{
+				off_t filesize = 0;
+				file.GetSize( &filesize );
+				
+				char *filedata = new char[filesize];
+				memset( filedata, 0, filesize );
+				file.Read( filedata, filesize );
+				
+				connection->SendData( filedata, filesize, "text/plain" );
+				
+				delete filedata;
 			}
 		}
 		else
