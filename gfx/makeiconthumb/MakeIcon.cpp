@@ -182,7 +182,7 @@ static BBitmap *MakeIcon( BBitmap *srcbitmap, int icon_width, int icon_height )
 	int dstheight = (int)floor(height*scale);
 
 	BBitmap *scaled = new BBitmap( BRect(0,0, dstwidth-1, dstheight-1), srcbitmap->ColorSpace() );
-	Scale( srcbitmap, scaled, filter_lanczos3 );
+	damn::Scale( srcbitmap, scaled, damn::filter_lanczos3 );
 
 	BBitmap *scaled_8bit = new BBitmap( BRect(0,0,icon_width-1,icon_height-1), B_COLOR_8_BIT, true );
 	BView *view = new BView( BRect(0,0,icon_width-1,icon_height-1), "", 0, 0 );

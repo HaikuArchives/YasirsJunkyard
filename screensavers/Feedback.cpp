@@ -33,6 +33,7 @@
 //-------------------------------------
 #include <kernel/OS.h>
 //-------------------------------------
+#include "BitmapRot.h"
 #include "Feedback.h"
 //#include "YUV2RGB.h"
 //#include "YUV2RGB_1632.h"
@@ -169,8 +170,8 @@ Feedback::~Feedback()
 	delete fVBits[1];
 }
 
-const float yvel = 3.1415f/100.0f;
-const float yvelvel = 3.1415f/200.0f;
+const float yvel = 3.1415f/10.0f;
+const float yvelvel = 3.1415f/100.0f;
 
 const float uvvel = 3.1415f/100.0f;
 const float uvvelvel = 3.1415f/200.0f;
@@ -280,8 +281,8 @@ void Feedback::Zoomer( uint8 *src, uint8 *dst, int width, int height, int fillsi
 			float dist = sqrt( xdisp*xdisp + ydisp*ydisp );
 //			ang += dist/100.0f;
 			ang += 10.0f / (dist+1);
-			xdisp = sin(ang)*2;
-			ydisp = cos(ang)*2;
+			xdisp = (int)sin(ang)*2;
+			ydisp = (int)cos(ang)*2;
 			
 			xdisp += (rand()%3)-1;
 			ydisp += (rand()%3)-1;
@@ -310,6 +311,11 @@ void Feedback::GetFrame( void *bits, int width, int height, int bpr, bool scale 
 //-----------------------------------------------------------------------------
 
 #if 1
+Waver waver_y_rot_ang( 3, 0.0f,0.0f, -3.1415/60,3.1415/60 );
+Waver waver_y_rot_zoom( 3, 0.0f,0.0f, -3.1415/80,3.1415/80 );
+Waver waver_y_rot_xpos( 3, 0.0f,0.0f, -3.1415/80,3.1415/80 );
+Waver waver_y_rot_ypos( 3, 0.0f,0.0f, -3.1415/80,3.1415/80 );
+
 void Feedback::GetFrame( void *bits, int width, int height, int bpr, bool scale )
 {
 	static bigtime_t lasttime = 0;
@@ -322,6 +328,10 @@ void Feedback::GetFrame( void *bits, int width, int height, int bpr, bool scale 
 		lasttime = nowtime;
 		frames = 0;
 	}
+
+	int srcframe = fFrame;
+	int dstframe = (fFrame+1)%2;
+	fFrame = (fFrame+1)%2;
 
 #if 0
 	int yx[256];
@@ -336,7 +346,8 @@ void Feedback::GetFrame( void *bits, int width, int height, int bpr, bool scale 
 			*yline++ = yy[iy]+yx[ix];
 		}
 	}
-#else
+#endif
+#if 0
 	int yx[256];
 	int yy[256];
 	yxwaver.GetData( yx, 256, -127, 127 );
@@ -347,6 +358,45 @@ void Feedback::GetFrame( void *bits, int width, int height, int bpr, bool scale 
 		for( int ix=0; ix<256; ix++ )
 		{
 			*yline++ = ((yy[iy]*yx[ix])>>8) + 128;
+		}
+	}
+#endif
+#if 1
+	float y_rot_ang;
+	waver_y_rot_ang.Update();
+	waver_y_rot_ang.GetData( &y_rot_ang, 1, -3.14f/30.0f, 3.14f/30.0f );
+
+	float y_rot_zoom;
+	waver_y_rot_zoom.Update();
+	waver_y_rot_zoom.GetData( &y_rot_zoom, 1, 0.8f, 1.0f );
+
+	float y_rot_xpos;
+	waver_y_rot_xpos.Update();
+	waver_y_rot_xpos.GetData( &y_rot_xpos, 1, 127.5f-32.0f, 127.5f+32.0f );
+
+	float y_rot_ypos;
+	waver_y_rot_ypos.Update();
+	waver_y_rot_ypos.GetData( &y_rot_ypos, 1, 127.5f-32.0f, 127.5f+32.0f );
+
+	RotatorRotate256(
+		fYBits[dstframe], fYBits[srcframe],
+		y_rot_xpos, y_rot_ypos,
+//		128.0f, 128.0f,
+		y_rot_zoom, y_rot_ang,
+		256, 256 );
+
+	int yx[256];
+	int yy[256];
+	yxwaver.GetData( yx, 256, -127, 127 );
+	yywaver.GetData( yy, 256, -127, 127 );
+	for( int iy=128-32; iy<128+32; iy++ )
+	{
+		uint8 *yline = (fYBits[dstframe]+iy*256);
+		for( int ix=128-32; ix<128+32; ix++ )
+		{
+			uint8 dstcol = (((yy[iy]*yx[ix])>>8)+128 );
+			uint8 srccol = yline[ix];
+			yline[ix] = (dstcol+srccol*31+15)/32;
 		}
 	}
 #endif
@@ -407,7 +457,7 @@ void Feedback::GetFrame( void *bits, int width, int height, int bpr, bool scale 
 	}
 #endif
 
-	fYUV2RGB.Convert( width,height, fYBits[0],fUBits[0],fVBits[0], 256,128,128, bits, bpr, scale );
+	fYUV2RGB.Convert( width,height, fYBits[dstframe],fUBits[0],fVBits[0], 256,128,128, bits, bpr, scale );
 }
 #endif
 

@@ -104,6 +104,8 @@ namespace damn
 		const	BString		&GetCommand() const { return fCommand; }
 		const	BString		&GetArg() const { return fArg; }
 		const	BString		&GetPath() const { return fPath; }
+		
+				int			GetVersion() const { return fMajorVersion*65536 + fMinorVersion; }
 	
 				int			GetParameterCnt() const { return fParameters.CountItems(); }
 		const	Parameter	&GetParameter( int index ) const { return *fParameters.ItemAt(index); }
@@ -120,6 +122,10 @@ namespace damn
 				void		SendError( int errorno, const char *string=NULL );
 
 				void		SendRedirection( const char *newurl, bool permanent=false );
+
+		static BString		EscapeString( const BString &original );
+		static BString		DeescapeString( const BString &original );
+		static BString		DeescapeString( const char *original, int length=-1 );
 	
 	private:
 							~Connection();

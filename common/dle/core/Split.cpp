@@ -39,6 +39,14 @@ template<class T> T max( T a, T b ) { return a>b?a:b; }
 
 //-----------------------------------------------------------------------------
 
+/** \class damn::Split
+ * \ingroup DLE
+ * A collection of Object objects.
+ *
+ */
+
+//-----------------------------------------------------------------------------
+
 damn::Split::Split( float spacing, align_t align ) :
 	BView(BRect(0,0,0,0), "split", B_FOLLOW_NONE, 0),
 	Group( this )
@@ -76,6 +84,14 @@ void damn::Split::AddObject( Object *child, align_t align, float weight )
 	fChilds.AddItem( c );
 	fView->AddChild( child->GetView() );
 }
+
+//-----------------------------------------------------------------------------
+
+/** \class damn::HSplit
+ * \ingroup DLE
+ * A horizontal splitter.
+ *
+ */
 
 //-----------------------------------------------------------------------------
 
@@ -158,6 +174,14 @@ void damn::HSplit::SetSize( const BRect &size )
 		srect.left = srect.right+1 + fHSpacingMid;
 	}
 }
+
+//-----------------------------------------------------------------------------
+
+/** \class damn::VSplit
+ * \ingroup DLE
+ * A vertical splitter.
+ *
+ */
 
 //-----------------------------------------------------------------------------
 

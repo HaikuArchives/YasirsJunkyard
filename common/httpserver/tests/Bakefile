@@ -1,26 +1,26 @@
 all -> dummy:
 	[
-		bin/batterylevel^executable:
-		bin/sendmessage^executable:
+		bin/SimpleFileServer^executable:
+		bin/MicroServer^executable:
 	]
 {
 }
 
-bin/sendmessage -> executable:
+bin/SimpleFileServer -> executable:
 	[
-		sendmessage.cpp^object:static
-		../lib/libmindstorm.a
+		SimpleFileServer.cpp^object:static
+		../lib/libhttpserver.a
 	]
 {
-	LDFLAGS += -ldevice
+	LDFLAGS += -lbe -lnetapi
 }
 
-bin/batterylevel -> executable:
+bin/MicroServer -> executable:
 	[
-		batterylevel.cpp^object:static
-		../lib/libmindstorm.a
+		MicroServer.cpp^object:static
+		../lib/libhttpserver.a
 	]
 {
-	LDFLAGS += -ldevice
+	LDFLAGS += -lbe -lnetapi
 }
 

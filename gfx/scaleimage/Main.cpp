@@ -78,7 +78,7 @@ int main( int argc, char **argv )
 
 	int destwidth = -1;
 	int destheight = -1;
-	bitmapscale_filtertype filter = filter_lanczos3;
+	damn::bitmapscale_filtertype filter = damn::filter_lanczos3;
 	bool verbose = false;
 	uint32 desttype = 0;
 	float filterwidth = 0.0f;
@@ -124,23 +124,23 @@ int main( int argc, char **argv )
 				break;
 
             case 'f':
-				if( strcasecmp(optarg,"point") == 0 )			filter = filter_point;
-				else if( strcasecmp(optarg,"box") == 0 )		filter = filter_box;
-				else if( strcasecmp(optarg,"triangle") == 0 )	filter = filter_triangle;
-				else if( strcasecmp(optarg,"bell") == 0 )		filter = filter_bell;
-				else if( strcasecmp(optarg,"bspline") == 0 )	filter = filter_bspline;
-				else if( strcasecmp(optarg,"catrom") == 0 )		filter = filter_catrom;
-				else if( strcasecmp(optarg,"gaussian") == 0 )	filter = filter_gaussian;
-				else if( strcasecmp(optarg,"sinc") == 0 )		filter = filter_sinc;
-				else if( strcasecmp(optarg,"bessel") == 0 )		filter = filter_bessel;
-				else if( strcasecmp(optarg,"mitchell") == 0 )	filter = filter_mitchell;
-				else if( strcasecmp(optarg,"hanning") == 0 )	filter = filter_hanning;
-				else if( strcasecmp(optarg,"hamming") == 0 )	filter = filter_hamming;
-				else if( strcasecmp(optarg,"blackman") == 0 )	filter = filter_blackman;
-				else if( strcasecmp(optarg,"kaiser") == 0 )		filter = filter_kaiser;
-				else if( strcasecmp(optarg,"normal") == 0 )		filter = filter_normal;
-				else if( strcasecmp(optarg,"filter") == 0 )		filter = filter_filter;
-				else if( strcasecmp(optarg,"lanczos3") == 0 )	filter = filter_lanczos3;
+				if( strcasecmp(optarg,"point") == 0 )			filter = damn::filter_point;
+				else if( strcasecmp(optarg,"box") == 0 )		filter = damn::filter_box;
+				else if( strcasecmp(optarg,"triangle") == 0 )	filter = damn::filter_triangle;
+				else if( strcasecmp(optarg,"bell") == 0 )		filter = damn::filter_bell;
+				else if( strcasecmp(optarg,"bspline") == 0 )	filter = damn::filter_bspline;
+				else if( strcasecmp(optarg,"catrom") == 0 )		filter = damn::filter_catrom;
+				else if( strcasecmp(optarg,"gaussian") == 0 )	filter = damn::filter_gaussian;
+				else if( strcasecmp(optarg,"sinc") == 0 )		filter = damn::filter_sinc;
+				else if( strcasecmp(optarg,"bessel") == 0 )		filter = damn::filter_bessel;
+				else if( strcasecmp(optarg,"mitchell") == 0 )	filter = damn::filter_mitchell;
+				else if( strcasecmp(optarg,"hanning") == 0 )	filter = damn::filter_hanning;
+				else if( strcasecmp(optarg,"hamming") == 0 )	filter = damn::filter_hamming;
+				else if( strcasecmp(optarg,"blackman") == 0 )	filter = damn::filter_blackman;
+				else if( strcasecmp(optarg,"kaiser") == 0 )		filter = damn::filter_kaiser;
+				else if( strcasecmp(optarg,"normal") == 0 )		filter = damn::filter_normal;
+				else if( strcasecmp(optarg,"filter") == 0 )		filter = damn::filter_filter;
+				else if( strcasecmp(optarg,"lanczos3") == 0 )	filter = damn::filter_lanczos3;
 				else
 				{
 					fprintf( stderr, "Illegal filter: %s\n", optarg );

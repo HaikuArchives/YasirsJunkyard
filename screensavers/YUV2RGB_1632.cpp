@@ -285,7 +285,7 @@ void YUV2RGB::Convert32Double(
 	uint8 *sy_1 = sy+systride;
 	
 	uint32 *drgb_0 = (uint32*)drgb;
-	uint32 *drgb_1 = (uint32*)drgb+drgbstride;
+	uint32 *drgb_1 = (uint32*)drgb+drgbstride*2;
 
 	int ewidth = width&(~1);
 	int eheight = height&(~1);
@@ -302,36 +302,36 @@ void YUV2RGB::Convert32Double(
 			//--------------------
 			int y = *sy_0++;
 			uint32 col = fRedClamp[y+r] | fGreenClamp[y+g] | fBlueClamp[y+b];
-			*(drgb_0+drgbstride2) = col;
+//			*(drgb_0+drgbstride2) = col;
 			*drgb_0++ = col;
-			*(drgb_0+drgbstride2) = col;
+//			*(drgb_0+drgbstride2) = col;
 			*drgb_0++ = col;
 			//--------------------
 			y = *sy_0++;
 			col = fRedClamp[y+r] | fGreenClamp[y+g] | fBlueClamp[y+b];
-			*(drgb_0+drgbstride2) = col;
+//			*(drgb_0+drgbstride2) = col;
 			*drgb_0++ = col;
-			*(drgb_0+drgbstride2) = col;
+//			*(drgb_0+drgbstride2) = col;
 			*drgb_0++ = col;
 
-			*(drgb_0+drgbstride2) = col;
+//			*(drgb_0+drgbstride2) = col;
 			*drgb_0++ = col;
 			//--------------------
 			y = *sy_1++;
 			col = fRedClamp[y+r] | fGreenClamp[y+g] | fBlueClamp[y+b];
-			*(drgb_1+drgbstride2) = col;
+//			*(drgb_1+drgbstride2) = col;
 			*drgb_1++ = col;
-			*(drgb_1+drgbstride2) = col;
+//			*(drgb_1+drgbstride2) = col;
 			*drgb_1++ = col;
 			//--------------------
 			y = *sy_1++;
 			col = fRedClamp[y+r] | fGreenClamp[y+g] | fBlueClamp[y+b];
-			*(drgb_1+drgbstride2) = col;
+//			*(drgb_1+drgbstride2) = col;
 			*drgb_1++ = col;
-			*(drgb_1+drgbstride2) = col;
+//			*(drgb_1+drgbstride2) = col;
 			*drgb_1++ = col;
 
-			*(drgb_1+drgbstride2) = col;
+//			*(drgb_1+drgbstride2) = col;
 			*drgb_1++ = col;
 		}
 		su += (sustride-(ewidth/2));

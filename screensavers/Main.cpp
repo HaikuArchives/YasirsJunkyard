@@ -161,7 +161,7 @@ bool FeedbackApp::QuitRequested()
 
 void FeedbackApp::ReadyToRun()
 {
-#if 0
+#if 1
 	fWindow = new FeedbackWin( BRect(100,100,100+256-1,100+256-1) );
 #else
 	status_t error;

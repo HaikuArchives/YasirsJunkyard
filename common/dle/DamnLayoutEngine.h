@@ -80,7 +80,7 @@ namespace damn
 
 	BRect	AlignRect( const BRect &fitrect, const MinMax2 &minmax, align_t align );
 	MinMax1	SpreadCalcSize( const float *min, const float *max, int count );
-	void	Spread( float *min, float *max, float *dstsize, float *weight, int count, float totsize );
+	void	Spread( const float *min, const float *max, float *dstsize, const float *weight, int count, float totsize );
 
 	//-------------------------------------
 

@@ -38,6 +38,41 @@
 #include "HttpServer.h"
 //-----------------------------------------------------------------------------
 
+/** \class damn::HttpServer
+ * A baseclass for a simple http server.
+ *
+ * 
+ * Example micro server:
+ * <pre>
+ * class MicroServer : public damn::HttpServer
+ * {
+ * public:
+ * 	MicroServer( const BNetAddress &addr ) : damn::HttpServer( addr )
+ * 	{
+ * 	}
+ * 
+ * private:
+ * 	void RequestReceived( Connection *connection )
+ * 	{
+ * 		if( connection->GetCommand() == "GET" )
+ * 		{
+ * 			static const char s[] = "<html><body>Test!</body></html>";
+ * 			connection->SendData( s, strlen(s), "text/html" );
+ * 		}
+ * 		else
+ * 			connection->SendError( HTTP_ERR_BAD_REQUEST, "Unknown command" );
+ * 	}
+ * };
+ * </pre>
+ */
+
+//-----------------------------------------------------------------------------
+
+/** Construct a server object.
+ * This does not start the server, but only inttializes the socket.
+ * If the initialization fails, Go() will fail.<br>
+ * To start the server call Go().
+ */
 damn::HttpServer::HttpServer( const BNetAddress &addr ) :
 	fConnectionsLock( "ConnectionListLock" )
 {
@@ -52,6 +87,9 @@ damn::HttpServer::HttpServer( const BNetAddress &addr ) :
 	fSelfDestruct = false;
 }
 
+/** Destroys the server object.
+ * All clients connected to the server will get disconnected.
+ */
 damn::HttpServer::~HttpServer()
 {
 	// stop the thread:
@@ -342,53 +380,32 @@ void damn::HttpServer::Connection::Loop()
 			}
 
 			// Split fArg into fPath and a list of CGI parms
-			fPath.SetTo( "" );
-			for( int i=0; i<fArg.Length(); i++ )
+			// (split, then deescape)
+			int cgipos = fArg.FindFirst( '?' );
+			if( cgipos >= 0 )
 			{
-				char c = fArg[i];
-				switch( c )
+				// process cgi parms
+				fPath = DeescapeString( fArg.String(), cgipos );
+				while( cgipos >= 0 )
 				{
-					case '%':
-					{
-						if( fArg.Length()-i < 2 )
-						{
-							fPath += c;
-							break;
-						}
-						char c1 = fArg[i+1];
-						if( c1=='%' )
-						{
-							i++;
-							fPath += '%';
-							break;
-						}
-						if( fArg.Length()-i < 3 )
-						{
-							fPath += '%';
-							break;
-						}
-						char c2 = fArg[i+2];
-						if( !isxdigit(c1) || !isxdigit(c2) )
-						{
-							fPath += '%';
-							break;
-						}
-						c1 = c1<='9' ? c1-'0' : toupper(c1)-'A'+10;
-						c2 = c2<='9' ? c2-'0' : toupper(c2)-'A'+10;
-						uint8 cx = c1<<4 | c2;
-						if( cx < 0x20 )
-						{
-							fPath += '%';
-							break;
-						}
-						fPath += cx;
-						i+=2;
-						break;
-					}
-					default:
-						fPath += c;
+					BString cgiparam;
+
+					int begcgi = cgipos;
+					cgipos = fArg.FindFirst( '&', begcgi+1 );
+					if( cgipos >= 0 )
+						cgiparam = DeescapeString( fArg.String()+begcgi+1, cgipos-(begcgi+1) );
+					else
+						cgiparam = DeescapeString( fArg.String()+begcgi+1 );
+
+					printf( "CGI: [%s]\n", cgiparam.String() );
 				}
 			}
+			else
+			{
+				fPath = DeescapeString( fArg );
+			}
+//?userfile1=test123&pan=up HTTP/1.1  			
+			
 
 			BString param;
 			while( (param=fEndpoint.ReceiveString()) != "" )
@@ -412,18 +429,6 @@ void damn::HttpServer::Connection::Loop()
 				else
 					fprintf( stderr, "Invalid parameter: [%s]\n", param.String() );
 			}
-#if 0
-			char clientname[256]; // FIXME: is there a max?
-			uint16 clientport;
-			fEndpoint.GetEndpoint()->RemoteAddr().GetAddr( clientname, &clientport );
-			fprintf( stderr, "%s:%d: [%s]\n", clientname, (int)clientport, fRequest.String()  );
-#endif
-
-//			printf( "In:      [%s]\n", httpcmd.String() );
-//			printf( "Command: [%s]\n", fCommand.String() );
-//			printf( "Arg:     [%s]\n", fArg.String() );
-//			printf( "Version: [%d.%d]\n", fMajorVersion, fMinorVersion );
-
 
 			rename_thread( find_thread(NULL), fPath.String() );
 
@@ -554,4 +559,55 @@ void damn::HttpServer::Connection::SendRedirection( const char *newurl, bool per
 
 //------------------------------------------------------------------------------
 
+BString damn::HttpServer::Connection::EscapeString( const BString &original )
+{
+	return original; // FIXME:
+}
 
+BString damn::HttpServer::Connection::DeescapeString( const BString &original )
+{
+	return DeescapeString( original.String(), original.Length() );
+}
+
+BString damn::HttpServer::Connection::DeescapeString( const char *original, int length )
+{
+	assert( original != NULL );
+
+	if( length == -1 ) length = strlen( original );
+
+	BString deescaped;
+	for( int i=0; i<length; i++ )
+	{
+		int c = (uchar)original[i];
+		if( c == '%' )
+		{
+			int c1 = length-i>1 ? (uchar)original[i+1] : -1;
+			int c2 = length-i>2 ? (uchar)original[i+2] : -1;
+			
+			if( c1 == '%' )
+			{
+				deescaped += c;
+				i++;
+			}
+			else if( isxdigit(c1) && isxdigit(c2) )
+			{
+				uchar cx = (c1<='9'?c1-'0':toupper(c1)-'A'+10)<<4 | (c2<='9'?c2-'0':toupper(c2)-'A'+10);
+				if( cx > 0 )
+				{
+					deescaped += cx;
+					i += 2;
+				}
+				else
+					deescaped += c;
+			}
+			else
+				deescaped += c;
+		}
+		else
+			deescaped += c;
+	}
+	
+	return deescaped;
+}
+
+//------------------------------------------------------------------------------

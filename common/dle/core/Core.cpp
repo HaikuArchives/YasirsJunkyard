@@ -32,6 +32,56 @@
 #include "../DamnLayoutEngine.h"
 //-----------------------------------------------------------------------------
 
+/** \defgroup DLE DamnLayoutEngine
+ *  
+ */
+
+//-------------------------------------
+
+/** \class damn::Object
+ * The baseobject of DLE.
+ * 
+ *
+ * \ingroup DLE
+ */
+
+//-------------------------------------
+
+/** \class damn::MinMax1
+ * One dimensional range.
+ *
+ * \ingroup DLE
+ */
+
+/** \fn damn::MinMax1::MinMax1( float min_, float max_ ) { min=min_; max=max_; }
+ * Constructs the object and sets the min and max members to \a min_ and \a max_.
+ *
+ */
+
+/** \var damn::MinMax1::min
+ *
+ * \sa damn::MinMax1::max
+ */
+
+/** \var damn::MinMax1::max
+ *
+ * \sa damn::MinMax1::min
+ */
+
+//-------------------------------------
+
+/** \class damn::MinMax2
+ * Two dimensional range.
+ *
+ * \ingroup DLE
+ */
+
+//-----------------------------------------------------------------------------
+
+/** Constructs a DLE object.
+ *
+ * \param view The view to help layout (must not be NULL).
+ */
 damn::Object::Object( BView *view )
 {
 	assert( view != NULL );
@@ -101,7 +151,15 @@ void damn::Object::ReLayoutParent()
 }
 
 
-//-------------------------------------
+//-----------------------------------------------------------------------------
+
+/** \class damn::Group
+ * \ingroup DLE
+ * Base for Object layout containers.
+ *
+ */
+
+//-----------------------------------------------------------------------------
 
 damn::Group::Group( BView *view ) :
 	Object( view )
@@ -157,6 +215,14 @@ void damn::Group::SetVSpacing( float top, float mid, float bottom )
 //-----------------------------------------------------------------------------
 
 //damn::Table::Table
+
+//-----------------------------------------------------------------------------
+
+/** \class damn::Space
+ * \ingroup DLE
+ * Helper object that is used to put space between other Object's.
+ *
+ */
 
 //-----------------------------------------------------------------------------
 

@@ -34,6 +34,10 @@
 #include "../DamnLayoutEngine.h"
 //-----------------------------------------------------------------------------
 
+/** 
+ * \ingroup DLE
+ * DLE utility function.
+ */
 damn::MinMax1 damn::SpreadCalcSize( const float *min, const float *max, int count )
 {
 	assert( min != NULL );
@@ -53,7 +57,11 @@ damn::MinMax1 damn::SpreadCalcSize( const float *min, const float *max, int coun
 
 //-----------------------------------------------------------------------------
 
-void damn::Spread( float *min, float *max, float *dstsize, float *weight, int count, float totsize )
+/** DLE utility function.
+ * \ingroup DLE
+ *
+ */
+void damn::Spread( const float *min, const float *max, float *dstsize, const float *weight, int count, float totsize )
 {
 	assert( dstsize != NULL );
 	assert( min != NULL );
@@ -123,6 +131,16 @@ void damn::Spread( float *min, float *max, float *dstsize, float *weight, int co
 
 //-----------------------------------------------------------------------------
 
+/** Fit/align a BRect into a MinMax2.
+ * If the \a fitrect is smaller than the minimum size specifies by \a minmax
+ *  it will assert.<br>
+ * If it's larger that the max size specified by \a minmax the retuned BRect
+ *  will get the max allowed size (as specified by \a minmax) and it's then
+ *  aligned according to \align.
+ *
+ * \ingroup DLE
+ * \internal
+ */
 BRect damn::AlignRect( const BRect &fitrect, const MinMax2 &minmax, align_t align )
 {
 	assert( minmax.hmin >= 0 );
