@@ -53,8 +53,10 @@ namespace damn
 		void SetTimeout( bigtime_t timeout ) { fTimeout=timeout; }
 
 		BString ReceiveString();
-		void SendData( const void *data, int32 len );
-		void SendString( const char *string, int32 len=-1 );
+		void ReceiveData( void *data, size_t datalength );
+
+		void SendData( const void *data, size_t datalength );
+		void SendString( const char *string, size_t stringlen=-1 );
 		void SendString( const BString &string ) { SendString(string.String(),string.Length()); }
 
 		BNetEndpoint *GetEndpoint() { return fEndpoint; }

@@ -29,6 +29,7 @@
 #ifndef DAMN_HTTPSERVER_H
 #define DAMN_HTTPSERVER_H
 //-----------------------------------------------------------------------------
+#include <map>
 //-------------------------------------
 #include <net/netdb.h>
 #include <net/NetEndpoint.h>
@@ -96,7 +97,18 @@ namespace damn
 	{
 		friend HttpServer;
 	public:
-		struct Parameter { BString fName; BString fValue; };
+//		struct Parameter { BString fName; BString fValue; };
+		struct UrlEncodedFormData
+		{
+			BString		fFilename;
+			BString		fContentType;
+			size_t		fContentSize;
+			const void	*fContentData;
+		};
+		struct UrlEncodedForm
+		{
+			std::map<BString,UrlEncodedFormData>	fContent;
+		};
 	
 							Connection( HttpServer *server, BNetEndpoint *endpoint );
 	
@@ -105,10 +117,13 @@ namespace damn
 		const	BString		&GetArg() const { return fArg; }
 		const	BString		&GetPath() const { return fPath; }
 		
+		const	UrlEncodedForm *GetContent();
+		
 				int			GetVersion() const { return fMajorVersion*65536 + fMinorVersion; }
 	
-				int			GetParameterCnt() const { return fParameters.CountItems(); }
-		const	Parameter	&GetParameter( int index ) const { return *fParameters.ItemAt(index); }
+//				int			GetParameterCnt() const { return fParameters.CountItems(); }
+//		const	Parameter	&GetParameter( int index ) const { return *fParameters.ItemAt(index); }
+		const	std::map<BString,BString> &GetParameters() const { return fParameters; }
 	
 		const	char		*GetClientHostName() const { return fClientHostName; }
 				uint16		GetClientPort() const { return fClientPort; }
@@ -156,7 +171,12 @@ namespace damn
 		BString					fPath;
 		int						fMajorVersion;
 		int						fMinorVersion;
-		damn::List<Parameter>	fParameters;
+//		damn::List<Parameter>	fParameters;
+		std::map<BString,BString>	fParameters;
+		BString					fContentType;
+		size_t					fContentLength;
+		void					*fContent;
+		UrlEncodedForm			*fDecodedContent;
 		
 		// SendData stats:
 		bigtime_t				fStartTime;

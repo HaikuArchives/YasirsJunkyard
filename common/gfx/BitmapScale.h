@@ -45,22 +45,22 @@ namespace damn
 	 */
 	enum bitmapscale_filtertype
 	{
-		filter_point,		///< Point filter
-		filter_box,			///< Box, Pulse, Fourier window, 1st order (constant) b-spline
-		filter_triangle,	///< Triangle, Bartlett window, 2nd order (linear) b-spline
+		filter_point,
+		filter_box,
+		filter_triangle,
 		filter_bell,		///< 3rd order (quadratic) b-spline
 		filter_bspline,		///< 4th order (cubic) b-spline
 		filter_catrom,		///< Catmull-Rom spline, Overhauser spline
-		filter_gaussian,	///< Gaussian (infinite)
+		filter_gaussian,
 		filter_sinc,		///< Sinc, perfect lowpass filter (infinite)
 		filter_bessel,		///< Bessel (for circularly symm. 2-d filt, inf)
 		filter_mitchell,	///< Mitchell
-		filter_hanning,		///< Hanning window
-		filter_hamming,		///< Hamming window
-		filter_blackman,	///< Blackman window
+		filter_hanning,
+		filter_hamming,
+		filter_blackman,
 		filter_kaiser,		///< Kaiser window
-		filter_normal,		///< normal(x) = gaussian(x/2)/2
-		filter_filter,		///< Filter
+		filter_normal,
+		filter_filter,
 		filter_lanczos3,	///< Lanczos3
 	};
 

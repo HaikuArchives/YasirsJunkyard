@@ -34,6 +34,43 @@
 #include "NetStringEndpoint.h"
 //-----------------------------------------------------------------------------
 
+#if 0
+****
+-----------------------------7d0f033ea4
+Content-Disposition: form-data; name="userfile1"; filename="C:\Autoexec.bak C:\Autoexec.bat"
+Content-Type: application/octet-stream
+
+
+-----------------------------7d0f033ea4--
+****
+
+
+****
+userfile1=c%3A%5Cautoexec.bat&pan=up
+****
+
+
+****
+-----------------------------7d017c8ea4
+Content-Disposition: form-data; name="userfile1"; filename="C:\autoexec.bat"
+Content-Type: application/octet-stream
+
+mode con codepage prepare=((850) C:\WINDOWS\COMMAND\ega.cpi)
+mode con codepage select=850
+keyb no,,C:\WINDOWS\COMMAND\keyboard.sys
+rem C:\PROGRA~1\NUMEGA\SOFTIC~1\WINICE.EXE
+PATH=%PATH%;C:\MSSQL7\BINN
+
+-----------------------------7d017c8ea4--
+****
+
+
+
+
+
+
+#endif
+
 damn::NetStringEndpoint::NetStringEndpoint( BNetEndpoint *endpoint )
 {
 	fEndpoint = endpoint;
@@ -43,6 +80,42 @@ damn::NetStringEndpoint::NetStringEndpoint( BNetEndpoint *endpoint )
 damn::NetStringEndpoint::~NetStringEndpoint()
 {
 	delete fEndpoint;
+}
+
+void damn::NetStringEndpoint::ReceiveData( void *data, size_t datalength )
+{
+	size_t recvlength = 0;
+
+	fEndpoint->SetTimeout( fTimeout );
+
+	// First, get the data from the queue:
+	if( fData.size() )
+	{
+		size_t datasize = fData.size();
+		if( datasize > datalength )
+			datasize = datalength;
+		printf( "Data from queue:%ld\n", datasize );
+		for( size_t i=0; i<datasize; i++ )
+		{
+			((uint8*)data)[recvlength++] = fData.front();
+			fData.pop_front();
+		}
+	}
+	
+	while( datalength != recvlength )
+	{
+		// recevive network data
+		printf( "Data from socket:%ld\n", datalength-recvlength );
+		status_t status = fEndpoint->Receive( (uint8*)data+recvlength, datalength-recvlength );
+		if( status<B_NO_ERROR )
+		{	
+			status=fEndpoint->Error();
+			throw status;
+		}
+		if( status == 0 )
+			throw (status_t)B_TIMED_OUT; //timeout
+		recvlength += status;
+	}
 }
 
 BString damn::NetStringEndpoint::ReceiveString()
@@ -77,17 +150,17 @@ BString damn::NetStringEndpoint::ReceiveString()
 	}
 }
 
-void damn::NetStringEndpoint::SendData( const void *data, int32 len )
+void damn::NetStringEndpoint::SendData( const void *data, size_t datalength )
 {
-	if( fEndpoint->Send(data,len) != len )
+	if( (size_t)fEndpoint->Send(data,datalength) != datalength )
 		throw (status_t)fEndpoint->Error();
 }
 
 	
-void damn::NetStringEndpoint::SendString( const char *string, int32 len )
+void damn::NetStringEndpoint::SendString( const char *string, size_t stringlen )
 {
-	if( len==-1 ) len=strlen(string);
-	if( fEndpoint->Send(string,len) != len )
+	if( stringlen==(size_t)-1 ) stringlen=(size_t)strlen( string );
+	if( (size_t)fEndpoint->Send(string,stringlen) != stringlen )
 		throw (status_t)fEndpoint->Error();
 }
 

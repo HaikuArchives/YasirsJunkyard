@@ -3,18 +3,8 @@ html.zip -> htmldoczip:
 		index.html^html:
 		bake.html^html:
 		yasirsjunkyard2.gif
+		1p.gif
 		
-		Main.png^image:png
-		Bake.png^image:png
-		Translators.png^image:png
-		AmigaIcon.png^image:png
-		HsiRaw.png^image:png
-		KernelDrivers.png^image:png
-		Optrex.png^image:png
-		W8378x.png^image:png
-		Utils.png^image:png
-		OptrexCPUMon.png^image:png
-
 		../translators/amigaicon/documentation/amigaicon.html^html:
 		../translators/amigaicon/documentation/amigaiconconfig.png
 
@@ -26,6 +16,8 @@ html.zip -> htmldoczip:
 
 		../kerneldrivers/w8378x/documentation/w8378x.html^html:
 		../kerneldrivers/w8378x/documentation/^image:jpeg
+
+		../kerneldrivers/supersmartcard/documentation/ssc.html^html:
 
 		../utils/optrexcpumon/documentation/optrexcpumon.html^html:
 		../utils/optrexcpumon/documentation/^image:jpeg
@@ -41,17 +33,7 @@ php.zip -> phpdoczip:
 		index.php3
 		bake.php3
 		yasirsjunkyard2.gif
-
-		Main.png^image:png
-		Bake.png^image:png
-		Translators.png^image:png
-		AmigaIcon.png^image:png
-		HsiRaw.png^image:png
-		KernelDrivers.png^image:png
-		Optrex.png^image:png
-		W8378x.png^image:png
-		Utils.png^image:png
-		OptrexCPUMon.png^image:png
+		1p.gif
 
 		../translators/amigaicon/documentation/amigaicon.php3
 		../translators/amigaicon/documentation/amigaiconconfig.png
@@ -65,36 +47,13 @@ php.zip -> phpdoczip:
 		../kerneldrivers/w8378x/documentation/w8378x.php3
 		../kerneldrivers/w8378x/documentation/^image:jpeg
 
+		../kerneldrivers/supersmartcard/documentation/ssc.php3
+
 		../utils/optrexcpumon/documentation/optrexcpumon.php3
 		../utils/optrexcpumon/documentation/^image:jpeg
 	]
 {
 }
-
-Main.png -> image:png [ leftbar.gic ] { STRING = Main
-}
-Bake.png -> image:png [ leftbar.gic ] { STRING = Bake
-}
-
-Translators.png -> image:png [ leftbar.gic ] { STRING=Translators
-}
-AmigaIcon.png -> image:png [ leftbar.gic ] { STRING = AmigaIcon
-}
-HsiRaw.png -> image:png [ leftbar.gic ] { STRING = HsiRaw
-}
-
-KernelDrivers.png -> image:png [ leftbar.gic ] { STRING = KernelDrivers
-}
-Optrex.png -> image:png [ leftbar.gic ] { STRING = Optrex
-}
-W8378x.png -> image:png [ leftbar.gic ] { STRING = W8378x
-}
-
-Utils.png -> image:png [ leftbar.gic ] { STRING = Utils
-}
-OptrexCPUMon.png -> image:png [ leftbar.gic ] { STRING = OptrexCPUMon
-}
-
 
 readhtml ::
 	(

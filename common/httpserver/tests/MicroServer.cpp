@@ -50,13 +50,19 @@ private:
 		printf( "ARG:  %s\n", connection->GetArg().String() );
 		printf( "URI:  %s\n", connection->GetPath().String() );
 		printf( "VER:  %d.%d\n", connection->GetVersion()/65536, connection->GetVersion()%65536 );
-		for( int i=0; i<connection->GetParameterCnt(); i++ )
+//		for( int i=0; i<connection->GetParameterCnt(); i++ )
+//		{
+//			printf( "PARM: %s=%s\n", connection->GetParameter(i).fName.String(), connection->GetParameter(i).fValue.String() );
+//		}
+		for( std::map<BString,BString>::const_iterator iparam=connection->GetParameters().begin(); iparam!=connection->GetParameters().end(); ++iparam )
+			printf( "PARM: %s=%s\n", iparam->first.String(), iparam->second.String() );
+
+		const Connection::UrlEncodedForm *content = connection->GetContent();
+		if( content )
 		{
-			printf( "PARM: %s=%s\n", connection->GetParameter(i).fName.String(), connection->GetParameter(i).fValue.String() );
 		}
 	
-	
-		if( connection->GetCommand() == "GET" )
+		if( connection->GetCommand()=="GET" || connection->GetCommand()=="POST" )
 		{
 //			static const char s[] = "<html><body>Test!</body></html>";
 			static const char s[] =
@@ -94,7 +100,7 @@ private:
 
 int main()
 {
-//	BNetDebug::Enable( true );
+	BNetDebug::Enable( true );
 	
 	MicroServer *server = new MicroServer( BNetAddress((const char*)NULL,80) );
 	server->Go( false );

@@ -27,6 +27,7 @@
 
 //-----------------------------------------------------------------------------
 #include <assert.h>
+#include <math.h>
 //#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,16 +66,23 @@ BBitmap *ReadBitmap( const char *filename )
 	return bitmap;
 }
 
+#define RANGE(_v,_l,_h) ((_v)<(_l)?(_l):(_v)>(_h)?(_h):(_v))
+#define GAMMA(_col) int(RANGE((pow(float(_col)/255.0f,gamma)+brightness)*contrast,0.0f,1.0f)*255.0f)
+#define TRUNCCOL(_col) (((_col)&0xf0) | ((_col)>>4)) // for better compression
+
 int main( int argc, char **argv )
 {
 //	status_t status;
 	BApplication app( "application/x-vnd.DamnRednex-Bitmap2Text" );
 
-	assert( argc == 4 );
+	assert( argc == 7 );
 	
 	const char *bitmapfile = argv[1];
 	int width = atoi( argv[2] );
 	int height = atoi( argv[3] );
+	float brightness = atof( argv[4] );
+	float contrast = atof( argv[5] );
+	float gamma = atof( argv[6] );
 
 	BBitmap *bitmap = ReadBitmap( bitmapfile );
 	assert( bitmap != NULL );
@@ -85,25 +93,40 @@ int main( int argc, char **argv )
 //	struct colchar_t { char c; /*int ansicol;*/ rgb_color rgbcol; };
 	std::vector<std::vector<damn::colchar_t> > text = damn::Bitmap2Text( &dstbitmap );
 	
-	printf( "<html>\n" );
-	printf( "<table bgcolor=#0000><tr><td>" );
-	printf( "<pre><font size=-2>" );
+	printf( "<html><body bgcolor=\"#000000\">\n" );
+//	printf( "<table bgcolor=\"#000000\"><tr><td>\n" );
+	printf( "<pre><font size=\"-2\">\n" );
+	
+	rgb_color lastcol = { 255,255,255,255 };
 	
 	for( int iy=0; iy<height; iy++ )
 	{
+		bool colinit = false;
 		for( int ix=0; ix<width; ix++ )
 		{
 			damn::colchar_t cc = text[iy][ix];
-//			printf( "%c", cc.c );
-			printf( "<font color=\"#%02X%02X%02X\">%c</font>",
-				cc.rgbcol.red, cc.rgbcol.green, cc.rgbcol.blue, cc.c );
+			cc.rgbcol.red = TRUNCCOL(GAMMA(cc.rgbcol.red));
+			cc.rgbcol.green = TRUNCCOL(GAMMA(cc.rgbcol.green));
+			cc.rgbcol.blue = TRUNCCOL(GAMMA(cc.rgbcol.blue));
+			if( !colinit || memcmp(&lastcol,&cc.rgbcol,sizeof(lastcol))!=0 )
+			{
+				if( colinit )
+					printf( "</font>" );
+				else
+					colinit=true;
+				printf( "<font color=\"#%02X%02X%02X\">", cc.rgbcol.red, cc.rgbcol.green, cc.rgbcol.blue );
+				lastcol = cc.rgbcol;
+			}
+			printf( "%c", cc.c );
 		}
+		if( colinit )
+			printf( "</font>" );
 		printf( "\n" );
 	}
 
-	printf( "</font></pre>" );
-	printf( "</td></tr></table>" );
-	printf( "</html>\n" );
+	printf( "</font></pre>\n" );
+//	printf( "</td></tr></table>\n" );
+	printf( "</body></html>\n" );
 
 
 	return 0;

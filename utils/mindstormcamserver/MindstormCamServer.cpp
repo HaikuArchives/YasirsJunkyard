@@ -361,7 +361,7 @@ void CamApp::WorkThread()
 			
 				char filename[1024];
 				sprintf( filename, "%s/cam_%02d%02d%02d_%02d%02d%02d.jpg", savepath,
-					timetm.tm_year, timetm.tm_mon, timetm.tm_mday,
+					timetm.tm_year%100, timetm.tm_mon+1, timetm.tm_mday,
 					timetm.tm_hour, timetm.tm_min, timetm.tm_sec );
 				printf( "<%s>\n", filename );
 	
@@ -568,12 +568,12 @@ void CamServer::RequestReceived( Connection *connection )
 #endif
 					}
 					else
-						connection->SendData( html.String(), html.Length() );
+						connection->SendData( html.String(), html.Length(), "text/html" );
 					delete compressed;
 				}
 				else
 				{
-					connection->SendData( html.String(), html.Length() );
+					connection->SendData( html.String(), html.Length(), "text/html" );
 				}
 			}
 
@@ -647,7 +647,7 @@ void CamServer::RequestReceived( Connection *connection )
 
 			html << "</body>\n";
 			html << "</html>\n";
-			connection->SendData( html.String(), html.Length() );
+			connection->SendData( html.String(), html.Length(), "text/html" );
 		}
 		else if( connection->GetArg().FindFirst(".jpg") >= 0 )
 		{

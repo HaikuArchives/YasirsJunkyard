@@ -30,6 +30,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <vector>
 //-------------------------------------
 #include <kernel/OS.h>
 #include <net/NetDebug.h>
@@ -236,11 +237,14 @@ BString damn::HttpServer::GetStat() const
 		string << "</td>";
 
 		string << "<td>";
-		for( int j=0; j<connection->GetParameterCnt(); j++ )
-		{
-			const Connection::Parameter &param = connection->GetParameter( j );
-			string << param.fName << "=" << param.fValue << "<br>";
-		}
+//		for( int j=0; j<connection->GetParameterCnt(); j++ )
+//		{
+//			const Connection::Parameter &param = connection->GetParameter( j );
+//			string << param.fName << "=" << param.fValue << "<br>";
+//		}
+		for( std::map<BString,BString>::const_iterator iparam=connection->GetParameters().begin(); iparam!=connection->GetParameters().end(); iparam++ )
+			string << iparam->first << "=" << iparam->second << "<br>";
+
 		string << "</td>";
 		string << "</tr>";
 	}
@@ -262,6 +266,10 @@ damn::HttpServer::Connection::Connection( HttpServer *server, BNetEndpoint *endp
 	fEndpoint.SetTimeout( 60 * 1000000 );
 	fInitStatus = B_NO_ERROR;
 	fSelfDestruct = false;
+
+	fContentLength = 0;
+	fContent = NULL;
+	fDecodedContent = NULL;
 
 	in_addr addr;
 	if( endpoint->RemoteAddr().GetAddr(addr,&fClientPort) == B_NO_ERROR )
@@ -295,8 +303,11 @@ damn::HttpServer::Connection::~Connection()
 		wait_for_thread( fThreadId, &retval );
 	}
 
-	for( int i=fParameters.CountItems()-1; i>=0; i-- )
-		delete fParameters.ItemAtFast(i);
+//	for( int i=fParameters.CountItems()-1; i>=0; i-- )
+//		delete fParameters.ItemAtFast(i);
+
+	free( fContent );
+	delete fDecodedContent;
 	
 	bool result;
 	result = fServer->fConnectionsLock.Lock();
@@ -344,15 +355,25 @@ void damn::HttpServer::Connection::Loop()
 		do
 		{
 			fRequest = "<requesting>";
-			for( int i=fParameters.CountItems()-1; i>=0; i-- )
-				delete fParameters.ItemAtFast(i);
-			fParameters.MakeEmpty();
+//			for( int i=fParameters.CountItems()-1; i>=0; i-- )
+//				delete fParameters.ItemAtFast(i);
+//			fParameters.MakeEmpty();
+			fParameters.empty();
+
+			fContentType = "";
+			fContentLength = 0;
+			fContent = NULL;
+
+			delete fDecodedContent;
+			fDecodedContent = NULL;
 
 			fStartTime = 0;
 			fCurrentPos = 0;
 			fTotSize = 0;
 
 			fRequest = fEndpoint.ReceiveString();
+			if( fRequest == "" )
+				continue;
 //-- decode --
 			fMajorVersion = -1;
 			fMinorVersion = -1;
@@ -410,9 +431,11 @@ void damn::HttpServer::Connection::Loop()
 			BString param;
 			while( (param=fEndpoint.ReceiveString()) != "" )
 			{
+//				printf( "Opt: \"%s\"\n", param.String() );
 				int split = param.FindFirst( ':' );
 				if( split > 0 )
 				{
+#if 0
 					Parameter *p = new Parameter;
 					param.CopyInto( p->fName, 0, split );
 					param.CopyInto( p->fValue, split+1, param.Length()-split );
@@ -422,13 +445,47 @@ void damn::HttpServer::Connection::Loop()
 					p->fValue.RemoveLast( " " );
 //					printf( "Opt: [%s=%s]\n", p->fParam.String(), p->fValue.String() );
 					fParameters.AddItem( p );
-	
 					if( p->fName=="Connection" && p->fValue=="Keep-Alive" )
 						fKeepAlive = true;
+#else
+					BString key,val;
+					param.CopyInto( key, 0, split );
+					param.CopyInto( val, split+1, param.Length()-split );
+					key.ToLower();
+					key.RemoveFirst( " " );
+					key.RemoveLast( " " );
+					val.RemoveFirst( " " );
+					val.RemoveLast( " " );
+//					printf( "Opt: [%s=%s]\n", key.String(), val.String() );
+					fParameters[key] = val;
+#endif
 				}
 				else
 					fprintf( stderr, "Invalid parameter: [%s]\n", param.String() );
 			}
+			
+			std::map<BString,BString>::iterator iparm;
+			if( (iparm=fParameters.find("connection"))!=fParameters.end() && iparm->second=="Keep-Alive" )
+				fKeepAlive = true;
+
+			if( (iparm=fParameters.find("content-length"))!=fParameters.end() )
+			{
+				size_t length = atoi( iparm->second.String() );
+				if( length>0 && length<16*1024*1024 ) // FIXME: this should be configurable!
+				{
+					fContent = malloc( length );
+					if( fContent != NULL )
+					{
+						fContentLength = length;
+						fEndpoint.ReceiveData( fContent, fContentLength );
+					}
+				}
+				if( (iparm=fParameters.find("content-type"))!=fParameters.end() )
+					fContentType = iparm->second;
+			}
+			
+			
+			
 
 			rename_thread( find_thread(NULL), fPath.String() );
 
@@ -455,6 +512,90 @@ void damn::HttpServer::Connection::Loop()
 		fprintf( stderr, "HTTPServer::Connection::Loop(): cought unknown exception\n" );
 		return;
 	}
+}
+
+// FIXME: this function is way to hardcoded, loosen it up a bit...
+const damn::HttpServer::Connection::UrlEncodedForm *damn::HttpServer::Connection::GetContent()
+{
+	if( fDecodedContent )
+		return fDecodedContent;
+
+	if( fContentLength==0 || fContent==NULL )
+		return NULL;
+
+	std::map<BString,BString>::iterator iparam;
+	if( (iparam=fParameters.find("content-type"))==fParameters.end() )
+		return NULL;
+
+	if( iparam->second.IFindFirst("multipart/form-data;boundary=")!=0 )
+		return NULL;
+
+	const char *boundary = iparam->second.String() + iparam->second.FindFirst( "=" ) + 1;
+//	printf( "BOUND: <<%s>>\n", boundary );
+	size_t boundarylen = strlen( boundary );
+	
+	std::vector<const char*> beginmarks;
+	std::vector<const char*> endmarks;
+	
+	for( uint i=0; i<fContentLength-boundarylen; i++ )
+	{
+		const char *content = (char*)fContent+i;
+		if( *content==boundary[0] && memcmp(content,boundary,boundarylen)==0 )
+		{
+			// check if this is a endmark:
+			if( fContentLength-i>=(boundarylen+2) && content[boundarylen]=='-' && content[boundarylen+1]=='-' )
+				endmarks.push_back( content );
+			else
+				beginmarks.push_back( content );
+		}
+	}
+
+//	printf( "BEGIN:\n" );
+//	for( uint i=0; i<beginmarks.size(); i++ )
+//		printf( "%d:%ld:<<<<%.*s>>>>\n", i, beginmarks[i]-(char*)fContent, (int)boundarylen, beginmarks[i] );
+//	printf( "END:\n" );
+//	for( uint i=0; i<endmarks.size(); i++ )
+//		printf( "%d:%ld:<<<<%.*s>>>>\n", i, endmarks[i]-(char*)fContent, (int)boundarylen+2, endmarks[i] );
+
+	if( beginmarks.size()!=1 || endmarks.size()!=1 )
+		return NULL;
+		
+	
+
+#if 0
+
+	char boundary[1024];
+	if( sscanf(iparm->second.String(), "form-data; name=\"%1000s\"; filename=\"%1000s\"", name, filename );
+	printf( ">> <%s> <%s>\n", name, filename );
+
+
+content-type=multipart/form-data;boundary=---------------------------7d08236ea4
+
+****
+-----------------------------7d017c8ea4
+Content-Disposition: form-data; name="userfile1"; filename="C:\autoexec.bat"
+Content-Type: application/octet-stream
+
+mode con codepage prepare=((850) C:\WINDOWS\COMMAND\ega.cpi)
+mode con codepage select=850
+keyb no,,C:\WINDOWS\COMMAND\keyboard.sys
+rem C:\PROGRA~1\NUMEGA\SOFTIC~1\WINICE.EXE
+PATH=%PATH%;C:\MSSQL7\BINN
+
+-----------------------------7d017c8ea4--
+****
+
+	
+
+	if( (iparm=fParameters.find("content-disposition"))==fParameters.end() )
+		return NULL;
+	
+	char name[1024];
+	char filename[1024];
+	sscanf( iparm->second.String(), "form-data; name=\"%1000s\"; filename=\"%1000s\"", name, filename );
+	printf( ">> <%s> <%s>\n", name, filename );
+#endif
+	return NULL;
 }
 
 void damn::HttpServer::Connection::SendData( const void *data, ssize_t size, const char *mimetype, const BString *extraheader )

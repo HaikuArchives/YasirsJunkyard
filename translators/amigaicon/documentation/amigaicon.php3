@@ -102,7 +102,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 <br><br>") . "
 <!-- ----------------------------------------------------------------------- -->
-" . makesubheading( "Changes", "<br><br>
+" . makesubheading( "Links", "<br><br>
 
 Jesper Hansen<br>
 <a href=\"mailto:jesper@funcom.com\">jesper@funcom.com</a><br>

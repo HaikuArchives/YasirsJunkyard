@@ -48,5 +48,8 @@ struct bitmap_rgb
 	uint8 alpha;
 };
 
+#define BBITMAP32_BITS(bitmap,xpos,ypos) \
+	(((uint32*)(((uint8*)((bitmap)->Bits())) + ((ypos)*(srcbitmap)->BytesPerRow()))) + (xpos))
+
 //------------------------------------------------------------------------------
 #endif

@@ -29,6 +29,7 @@ all -> dummy:
 		kerneldrivers/w8378x/tests/bin/test^executable:
 		kerneldrivers/optrex/bin/optrex^kerneldriver:
 		kerneldrivers/optrex/tests/bin/test^executable:
+		kerneldrivers/supersmartcard/bin/ssc^kerneldriver:
 
 		utils/optrexcpumon/bin/optrexcpumon^executable:
 	]
@@ -46,6 +47,7 @@ install ::
 
 		kerneldrivers/w8378x/install
 		kerneldrivers/optrex/install
+		kerneldrivers/supersmartcard/install
 
 		utils/optrexcpumon/install
 	)

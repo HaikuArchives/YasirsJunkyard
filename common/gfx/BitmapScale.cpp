@@ -281,8 +281,27 @@ void damn::Scale( const BBitmap *srcbitmap, BBitmap *dstbitmap, damn::bitmapscal
 }
 
 //-----------------------------------------------------------------------------
-
 // box, pulse, Fourier window, 1st order (constant) b-spline
+
+/** \enum damn::bitmapscale_filtertype::filter_point
+ * Point filter
+ *
+ * \f$f(x) = \left\{ \begin{array}{l}
+ *		0,	x < -0.5 \\
+ *		1,	-0.5 \leq x \leq 0.5 \\
+ *		0,	x > 0.5
+ * \end{array} \right.\f$
+ */
+
+/** \enum damn::bitmapscale_filtertype::filter_box
+ * Box, Pulse, Fourier window, 1st order (constant) b-spline
+ *
+ * \f$f(x) = \left\{ \begin{array}{l}
+ *		0,	x < -0.5 \\
+ *		1,	-0.5 \leq x \leq 0.5 \\
+ *		0,	x > 0.5
+ * \end{array} \right.\f$
+ */
 static float Filter_Box( float t )
 {
     if( t < -0.5f ) return 0.0f;
@@ -291,8 +310,17 @@ static float Filter_Box( float t )
 }
 
 //-----------------------------------------------------------------------------
-
 // triangle, Bartlett window, 2nd order (linear) b-spline
+
+/** \enum damn::bitmapscale_filtertype::filter_triangle
+ * Triangle, Bartlett window, 2nd order (linear) b-spline
+ *
+ * \f$f(x) = \left\{ \begin{array}{l}
+ *		0,			x < -1 \\
+ *		1 - | x |,	-1 \leq x \leq 1 \\
+ *		0,			x > 1
+ * \end{array} \right.\f$
+ */
 static float Filter_Triangle( float t )
 {
 	if( t < 0.0f ) t = -t;
@@ -301,8 +329,8 @@ static float Filter_Triangle( float t )
 }
 
 //-----------------------------------------------------------------------------
-
 // 3rd order (quadratic) b-spline
+
 static float Filter_Bell( float t )
 {
 	if( t < 0.0f ) t = -t;
@@ -348,16 +376,21 @@ static float Filter_Catrom( float t )
 }
 
 //-----------------------------------------------------------------------------
-
 // Gaussian (infinite)
+
+/** \enum damn::bitmapscale_filtertype::filter_gaussian
+ * Gaussian (infinite)
+ *
+ * \f$ f(x) = e ^ { -2 x ^ 2 } \times \sqrt { \frac 2 \pi } \f$
+ */
 static float Filter_Gaussian( float t )
 {
 	return exp(-2.0f*t*t) * sqrt(2.0f/PI);
 }
 
 //-----------------------------------------------------------------------------
-
 // Sinc, perfect lowpass filter (infinite)
+
 static float Filter_Sinc( float t )
 {
 	if( t == 0.0f ) return 1.0f;
@@ -366,8 +399,8 @@ static float Filter_Sinc( float t )
 }
 
 //-----------------------------------------------------------------------------
-
 // Bessel (for circularly symm. 2-d filt, inf), See Pratt "Digital Image Processing" p. 97
+
 static float Filter_Bessel( float t )
 {
 	if( t == 0.0f ) return PI/4.0f;
@@ -401,20 +434,39 @@ static float Filter_Mitchell( float t )
 }
 
 //-----------------------------------------------------------------------------
-
 // Hanning window
+
+/** \enum damn::bitmapscale_filtertype::filter_hanning
+ * Hanning window
+ *
+ * \f$ f(x) = \frac 1 2 + \frac 1 2 \cos( \pi x ) \f$
+ */
 static float Filter_Hanning( float t )
 {
 	return 0.5f + 0.5f*cos(t*PI);
 }
 
+//-----------------------------------------------------------------------------
 // Hamming window
+
+/** \enum damn::bitmapscale_filtertype::filter_hamming
+ * Hamming window
+ *
+ * \f$ f(x) = \frac{27}{50} + \frac{23}{50} \cos( \pi x ) \f$
+ */
 static float Filter_Hamming( float t )
 {
 	return 0.54f + 0.46f*cos(t*PI);
 }
 
+//-----------------------------------------------------------------------------
 // Blackman window
+
+/** \enum damn::bitmapscale_filtertype::filter_blackman
+ * Blackman window
+ *
+ * \f$ f(x) = \frac{21}{50} + \frac{25}{50} \cos( \pi x ) + \frac{4}{50} \cos( 2 \pi x ) \f$
+ */
 static float Filter_Blackman( float t )
 {
 	return 0.42f + 0.50f*cos(t*PI) + 0.08f*cos(t*2.0f*PI);
@@ -449,18 +501,32 @@ static float Filter_Kaiser( float t )
 }
 
 //-----------------------------------------------------------------------------
-
 // Normal(x) = Gaussian(x/2)/2
+
+/** \enum damn::bitmapscale_filtertype::filter_normal
+ * normal(x) = gaussian(x/2)/2
+ *
+ * \f$ f(x) = \frac{\mbox{$ e ^ {\mbox{$ - \frac{x}{2} x $}} $}}{\mbox{$ \sqrt { 2 \pi } $}} \f$
+ */
 static float Filter_Normal( float t )
 {
 	return exp( -t * t/2.0f ) / sqrt(2.0f*PI);
 }
 
 //-----------------------------------------------------------------------------
+// Filter
 
+/** \enum damn::bitmapscale_filtertype::filter_filter
+ * Filter
+ *
+ * \f$f(x) = \left\{ \begin{array}{l}
+ *		0,								x < -1 \\
+ *		f(x) = 2|x|^3 - 3|x|^2 + 1,		-1 \leq x \leq 1 \\
+ *		0,								x > 1
+ * \end{array} \right.\f$
+ */
 static float Filter_Filter( float t )
 {
-	/* f(t) = 2|t|^3 - 3|t|^2 + 1, -1 <= t <= 1 */
 	if( t < 0.0f ) t = -t;
 	if( t < 1.0f ) return (2.0f * t - 3.0f) * t * t + 1.0f;
 	return 0.0f;
