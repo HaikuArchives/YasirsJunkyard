@@ -1,0 +1,7 @@
+lib/libmindstorm.a -> library:static
+	[
+		RcxComm.cpp^object:static
+	]
+{
+}
+
