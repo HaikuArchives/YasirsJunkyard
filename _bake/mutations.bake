@@ -6,6 +6,7 @@
 #  the (scanner_name) is optional
 #
 
+# -- x86 --
 type header: [h] (c_scanner)
 
 type cplusplus: [cpp]  (c_scanner)
@@ -22,7 +23,26 @@ type resource:	[rsrc]
 
 type executable: [] 
 type kerneldriver: [] 
+# -- x86 --
 
+# -- gameboy --
+type gbheader: [ginc] (gbasm_scanner)
+
+type gbasm: [gasm] (gbasm_scanner)
+
+type gbobject: [gobj]
+
+type gblibrary: [glib]
+
+type gbrawdata: [grdata]
+
+type gbpackeddata: [gpdata]
+
+type gbromimage: [gb]
+# -- gameboy --
+
+
+# -- doc --
 type php3: [php3] (php_scanner)
 type html: [html]
 type htmldoc: [html]
@@ -36,6 +56,7 @@ type image:gif [gif]
 type image:png [png]
 
 type genimagecfg: [gic]
+# -- doc --
 
 type dummy: [] 
 
@@ -76,6 +97,121 @@ transform cplusplus (compile)
 		$(CC) -c $(_sources_) $(CFLAGS) -o $(0)
 	>>>
 }
+
+accumulate library:static (link)
+{
+	[ object:static ] 
+
+	LDFLAGS += $(LDFLAGS_STATIC)
+
+	<<<
+		$(AR) -cru $(0) $(_sources_)
+	>>>
+}
+
+accumulate library:shared (link)
+{
+	[ object:shared ] 
+
+	LDFLAGS += $(LDFLAGS_SHARED) -soname=$(0)
+
+	<<<
+		$(LD) -o $(0) $(_sources_) $(LDFLAGS)
+	>>>
+}
+
+accumulate executable: (link)
+{
+	[ object:shared object:static library:static resource: ]
+
+	LDFLAGS += $(LDFLAGS_EXECUTABLE)
+
+	OBJS = $(filter \.\(o\|a\|shobj\)$, $(_sources_))
+	RSRCS = $(filter \.rsrc$, $(_sources_))
+
+	<<<
+		$(LD) -o $(0) $(OBJS) $(LDFLAGS)
+		sh -c "if [ '$(RSRCS)' != '' ]; then $(XRES) -o $(0) $(RSRCS); fi"
+		$(MIMESET) $(0)
+	>>>
+}
+
+accumulate kerneldriver: (link)
+{
+	[ object:nopic ]
+
+	LDFLAGS += $(LDFLAGS_KERNEL)
+
+	OBJS = $(filter \.\(o\|a\|shobj\)$, $(_sources_))
+	RSRCS = $(filter \.rsrc$, $(_sources_))
+
+	<<<
+		$(LD) -o $(0) $(_sources_) $(LDFLAGS)
+		$(MIMESET) $(0)
+	>>>
+}
+
+
+# -- gameboy --
+transform gbasm (assemble)
+{
+	-> [gbobject:]
+
+	<<<
+		sh -c "$(GBASM) $(GBASMFLAGS) -o$(0) $(_sources_) | \
+			sed s/$\(echo $(_sourcedir_)/ | tr / .)// | \
+			sed \"s/\\*ERROR\\*.\\([^(]*\\)(\\([0-9]*\\)).*/\\1:\\2/\" "
+
+	>>>
+}
+
+# turns assembly code/data into a backed chunk:
+transform gbasm (assemble)
+{
+	-> [gbpackeddata:]
+
+	<<<
+		sh -c "$(GBASM) -z00 $(GBASM_INCLUDE) -o$(0).tmpgobj $(_sources_) | \
+			sed \"s/\\*ERROR\\*.\\([^(]*\\)(\\([0-9]*\\)).*/\\1:\\2/\" && \
+			\
+			echo \"[objects]\" >$(0).tmplnk && \
+			echo $(0).tmpgobj >>$(0).tmplnk && \
+			echo \"[output]\" >>$(0).tmplnk && \
+			echo $(0).tmpgb >>$(0).tmplnk && \
+			$(GBLD) -z00 -tG $(0).tmplnk && \
+			c64pack $(0).tmpgb $(0)"
+	>>>
+}
+
+accumulate gblibrary: (link)
+{
+	[ gbobject: ] 
+
+	<<<
+		$(GBAR) $(0) a $(_sources_)
+	>>>
+}
+
+accumulate gbromimage: (link)
+{
+	[ gbobject: gblibrary: gbpackeddata: ]
+
+	OBJS = $(filter \.gobj, $(_sources_))
+	LIBS = $(filter \.glib, $(_sources_))
+
+	<<<
+		sh -c "echo \"[objects]\" >$(0).lnk && \
+			for obj in $(OBJS); do echo \$obj >>$(0).lnk; done && \
+			for lib in \"[libraries]\" $(LIBS); do echo \$lib >>$(0).lnk; done && \
+			echo \"[output]\" >>$(0).lnk && \
+			echo $(0) >>$(0).lnk && \
+			$(GBLD) $(GBLDFLAGS) -m$(0).map -n$(0).sym $(0).lnk && \
+			$(GBFIX) $(GBFIXFLAGS) $(0)"
+	>>>
+}
+
+
+# -- gameboy --
 
 transform php3
 {
@@ -130,60 +266,6 @@ accumulate phpdoczip: (zip)
 
 	<<<
 		zip -9jq $(0) $(_sources_)
-	>>>
-}
-
-
-accumulate library:static (link)
-{
-	[ object:static ] 
-
-	LDFLAGS += $(LDFLAGS_STATIC)
-
-	<<<
-		$(AR) -cru $(0) $(_sources_)
-	>>>
-}
-
-accumulate library:shared (link)
-{
-	[ object:shared ] 
-
-	LDFLAGS += $(LDFLAGS_SHARED) -soname=$(0)
-
-	<<<
-		$(LD) -o $(0) $(_sources_) $(LDFLAGS)
-	>>>
-}
-
-accumulate executable: (link)
-{
-	[ object:shared object:static library:static resource: ]
-
-	LDFLAGS += $(LDFLAGS_EXECUTABLE)
-
-	OBJS = $(filter \.\(o\|a\|shobj\)$, $(_sources_))
-	RSRCS = $(filter \.rsrc$, $(_sources_))
-
-	<<<
-		$(LD) -o $(0) $(OBJS) $(LDFLAGS)
-		sh -c "if [ '$(RSRCS)' != '' ]; then $(XRES) -o $(0) $(RSRCS); fi"
-		$(MIMESET) $(0)
-	>>>
-}
-
-accumulate kerneldriver: (link)
-{
-	[ object:nopic ]
-
-	LDFLAGS += $(LDFLAGS_KERNEL)
-
-	OBJS = $(filter \.\(o\|a\|shobj\)$, $(_sources_))
-	RSRCS = $(filter \.rsrc$, $(_sources_))
-
-	<<<
-		$(LD) -o $(0) $(_sources_) $(LDFLAGS)
-		$(MIMESET) $(0)
 	>>>
 }
 

@@ -4,5 +4,9 @@ c_scanner
 php_scanner 
     <<<include[^\"]*\"([^\"]*)\">>>
 
+gbasm_scanner
+    <<<include[^\"]*\"([^\"]*)\">>>
+    <<<incbin[^\"]*\"([^\"]*)\">>>
+	
 no_scanner
 

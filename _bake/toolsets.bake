@@ -59,4 +59,25 @@ toolset beos_intel_gnupro
 	LDFLAGS_KERNEL	+= -nostdlib /boot/develop/lib/x86/_KERNEL_
 
 #-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+# This is not realy in the bake spirit (to mix toolsets)...
+
+	GBASM			= rgbasm
+	GBASMFLAGS		+= -zff $(GBASM_INCLUDE)
+
+	gbasm_scanner	+= $(_sourcedir_) $(_builddir_) $(_project_) $(_build_)
+	GBASM_INCLUDE	+= $(foreach path, $(gbasm_scanner), "-i$(path)/ ")
+	
+	GBAR			= xlib
+	
+	GBLD			= xlink
+	GBLDFLAGS		+= -zff
+
+	GBFIX			= rgbfix
+	GBFIXFLAGS		+= -v
+
+
+#-----------------------------------------------------------------------------
+
 }
