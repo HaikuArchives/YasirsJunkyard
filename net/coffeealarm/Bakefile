@@ -1,0 +1,17 @@
+bin/CoffeeAlarm -> executable:
+	[
+		Main.cpp^object:static
+
+		CAApp.cpp^object:static
+
+		CAWin.cpp^object:static
+		BitmapView.cpp^object:static
+		LoadView.cpp^object:static
+		
+		HTTPFetch.cpp^object:static
+		NetStringEndpoint.cpp^object:static
+	]
+{
+	LDFLAGS += -lbe -lnetapi -ltranslation
+}
+

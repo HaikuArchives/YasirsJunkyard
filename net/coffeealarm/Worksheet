@@ -1,0 +1,7 @@
+cd /junkyard/net/coffeealarm ; . ../../setupenv.sh
+--------------------------------------------------------------------------------
+rm -rfv ../../build #clean
+bake bin/CoffeeAlarm
+bake bin/CoffeeAlarm && ../../build/BeOS-BePC/beos_intel_gnupro/net/coffeealarm/bin/CoffeeAlarm
+--------------------------------------------------------------------------------
+
