@@ -256,7 +256,11 @@ void CamApp::ReadyToRun()
 		fCam->GetFirmwareVersion(), fCam->GetFirmwareRevision(),
 		fCam->GetVideoCompressorVersion(), fCam->GetVideoCompressorRevision() );
 	fCam->EnableAutoExposure( true );
-	fCam->SetFrameRate( CPiACam::FRATE_25, CPiACam::FDIV_1 );
+	fCam->SetFrameRate( CPiACam::FRATE_25, CPiACam::FDIV_8 );
+	fCam->EnableCompression( CPiACam::COMPRESSION_DISABLED, CPiACam::DECIMATION_OFF );
+//	fCam->SetCompressionTarget( comprressiontarget_t target, int framerate, float quality );
+//	fCam->SetYUVTreshold( float ythreshold, float uvthreshold );
+
 	fCam->Unlock();
 
 
@@ -486,7 +490,7 @@ void CamServer::RequestReceived( Connection *connection )
 
 			html << "<hr>\n";
 		
-			html << "<b>Note: the camera-controll unit is currently nonfunctionable...</b>";
+			html << "<b>Note: the camera-controll unit is currently out of order...</b>";
 
 			html << "<hr>\n";
 

@@ -33,8 +33,8 @@
 #include "RcxComm.h"
 //-----------------------------------------------------------------------------
 
-#define VERBOSE
-#define SENDRECV_VERBOSE
+//#define VERBOSE
+//#define SENDRECV_VERBOSE
 
 #define RCX_OP_PING				0x10
 #define RCX_OP_BATTERYVOLTAGE	0x30
