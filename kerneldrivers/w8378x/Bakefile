@@ -1,0 +1,18 @@
+bin/w8378x -> kerneldriver:
+	[
+		driver.c^object:nopic
+	]
+{
+}
+
+install ::
+	(
+		bin/w8378x^kerneldriver:
+	)
+{
+	<<<
+ 		cp $(_builddir_)/bin/w8378x /boot/home/config/add-ons/kernel/drivers/bin
+		mkdir -p /boot/home/config/add-ons/kernel/drivers/dev/misc
+		ln -sf ../../bin/w8378x /boot/home/config/add-ons/kernel/drivers/dev/misc
+	>>>
+}

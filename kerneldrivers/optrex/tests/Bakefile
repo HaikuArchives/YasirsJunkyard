@@ -1,0 +1,10 @@
+bin/test -> executable:
+	[
+		Main.cpp^object:static
+	]
+	(
+		../install
+	)
+{
+}
+

@@ -1,0 +1,19 @@
+bin/optrex -> kerneldriver:
+	[
+		driver.c^object:nopic
+	]
+{
+}
+
+install ::
+	(
+		bin/optrex^kerneldriver:
+	)
+{
+	<<<
+ 		cp $(_builddir_)/bin/optrex /boot/home/config/add-ons/kernel/drivers/bin
+		mkdir -p /boot/home/config/add-ons/kernel/drivers/dev/misc
+		ln -sf ../../bin/optrex /boot/home/config/add-ons/kernel/drivers/dev/misc
+	>>>
+}
+
