@@ -1,0 +1,14 @@
+cd /junkyard/gfx/image2gbtiles ; . ../../setupenv.sh
+--------------------------------------------------------------------------------
+rm -rfv ../../build #clean
+bake bin/image2gbtiles
+--------------------------------------------------------------------------------
+SCALEIMAGEBIN=../../build/BeOS-BePC/beos_intel_gnupro/gfx/image2gbtiles/bin/image2gbtiles 
+SRCIMG=/projects/gameboy/test/data/damn2.bmp
+SRCIMG=/projects/gameboy/test/data/rednex.bmp
+SRCIMG=/boot/home/OldStuff/OldCode\(sort\)/oldprojects/PalmPilot/sinscroller/font/micro.bmp
+
+$SCALEIMAGEBIN -v -p61,136,160 $SRCIMG
+$SCALEIMAGEBIN -v $SRCIMG
+$SCALEIMAGEBIN -v $SRCIMG
+--------------------------------------------------------------------------------
