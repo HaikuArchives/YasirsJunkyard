@@ -28,8 +28,12 @@
 //-----------------------------------------------------------------------------
 #include <stdio.h>
 //-------------------------------------
+#include <app/Message.h>
+#include <interface/View.h>
+#include <interface/Window.h>
+#include <support/Debug.h>
 //-------------------------------------
-#include "../DamnLayoutEngine.h"
+#include "../Core.h"
 //-----------------------------------------------------------------------------
 
 /** \defgroup DLE DamnLayoutEngine
@@ -78,21 +82,28 @@
 
 //-----------------------------------------------------------------------------
 
+void dle::MinMax2::PrintToStream() const
+{
+	printf( "MinMax2(horz:%.1f-%.1f vert:%.1f-%.1f)\n", horz.min, horz.max, vert.min, vert.max );
+}
+
+//-----------------------------------------------------------------------------
+
 /** Constructs a DLE object.
  *
  * \param view The view to help layout (must not be NULL).
  */
-damn::Object::Object( BView *view )
+dle::Object::Object( BView *view )
 {
-	assert( view != NULL );
+	ASSERT_WITH_MESSAGE( view!=NULL, "The view can not be NULL" );
 	fView = view;
 }
 
-damn::Object::~Object()
+dle::Object::~Object()
 {
 }
 
-void damn::Object::SetSize( const BRect &size )
+void dle::Object::SetSize( const BRect &size )
 {
 	const BRect &bounds = fView->Frame();
 	if( bounds != size )
@@ -103,22 +114,41 @@ void damn::Object::SetSize( const BRect &size )
 	}
 }
 
-BView *damn::Object::GetView() const
+BView *dle::Object::GetView() const
 {
 	return fView;
 }
 
-damn::Object *damn::Object::GetParent() const
-{
-	return dynamic_cast<Object*>( fView->Parent() );
-}
+//dle::Object *dle::Object::GetParent() const
+//{
+//	return dynamic_cast<Object*>( fView->Parent() );
+//}
 
-void damn::Object::ReLayout()
+void dle::Object::ReLayout()
 {
 	ReLayoutParent();
 }
 
-void damn::Object::ReLayoutParent()
+const dle::Settings *dle::Object::GetParentSettings() const
+{
+	BView *view = fView;
+	while( view )
+	{
+		Settings *parentsettings = dynamic_cast<Settings*>( view->Parent() );
+		if( parentsettings )
+			return parentsettings;
+
+		view = view->Parent(); // Skip non DLE views
+	}
+
+	Settings *root = dynamic_cast<Settings*>( fView->Window() );
+	if( root )
+		return root;
+
+	return NULL;
+}
+
+void dle::Object::ReLayoutParent()
 {
 	BView *view = fView;
 	while( view )
@@ -150,75 +180,45 @@ void damn::Object::ReLayoutParent()
 	fprintf( stderr, "ReLayoutParent: could not find parent\n" );
 }
 
-
-//-----------------------------------------------------------------------------
-
-/** \class damn::Group
- * \ingroup DLE
- * Base for Object layout containers.
- *
- */
-
-//-----------------------------------------------------------------------------
-
-damn::Group::Group( BView *view ) :
-	Object( view )
+bool dle::Object::SendMouseEventToParent() const
 {
-}
+	BView *view = GetView();
+	if( view == NULL )
+		return false;
 
-damn::Group::~Group()
-{
-}
+	BView *parent = view->Parent();
+	if( parent == NULL )
+		return false;
 
-void damn::Group::SetSpacing( float spacing )
-{
-	SetHSpacing( spacing, spacing*2, spacing );
-	SetVSpacing( spacing, spacing*2, spacing );
-}
+	BWindow *window = view->Window();
+	if( window == NULL )
+		return false;
 
-void damn::Group::SetHSpacing( float spacing )
-{
-	SetHSpacing( spacing, spacing*2, spacing );
-}
-
-void damn::Group::SetHSpacing( float left, float mid, float right )
-{
-	assert( floor(left) == left ); // no support for unaligned spacing
-	assert( floor(mid) == mid ); // no support for unaligned spacing
-	assert( floor(right) == right ); // no support for unaligned spacing
-
-	fHSpacingLeft  = left;
-	fHSpacingMid   = mid;
-	fHSpacingRight = right;
-}
-
-void damn::Group::SetVSpacing( float spacing )
-{
-	SetVSpacing( spacing, spacing*2, spacing );
-}
-
-void damn::Group::SetVSpacing( float top, float mid, float bottom )
-{
-	assert( floor(top) == top ); // no support for unaligned spacing
-	assert( floor(mid) == mid ); // no support for unaligned spacing
-	assert( floor(bottom) == bottom ); // no support for unaligned spacing
-
-	fVSpacingTop    = top;
-	fVSpacingMid    = mid;
-	fVSpacingBottom = bottom;
+	BMessage *msg = window->CurrentMessage();
+	if( msg == NULL )
+		return false;
+	
+	int32 modifiers;
+	if( msg->FindInt32("modifiers",&modifiers) < B_OK )
+		return false;
+	
+	if( !(modifiers&B_SHIFT_KEY) )
+		return false;
+		
+	return true;
 }
 
 //-----------------------------------------------------------------------------
 
-//damn::Grid::Grid
+//dle::Grid::Grid
 
 //-----------------------------------------------------------------------------
 
-//damn::Table::Table
+//dle::Table::Table
 
 //-----------------------------------------------------------------------------
 
-/** \class damn::Space
+/** \class dle::Space
  * \ingroup DLE
  * Helper object that is used to put space between other Object's.
  *
@@ -226,26 +226,12 @@ void damn::Group::SetVSpacing( float top, float mid, float bottom )
 
 //-----------------------------------------------------------------------------
 
-damn::Space::Space() :
-	BView( BRect(0,0,0,0), "space", B_FOLLOW_NONE, 0 ),
-	Object( this )
+dle::Root::Root()
 {
-	fMinMax = MinMax2( 0,1000000, 0,1000000 );
 }
 
-void damn::Space::SetMinMaxSize( const MinMax2 &mm )
+dle::Root::~Root()
 {
-	fMinMax = mm;
-}
-
-damn::MinMax2 damn::Space::GetMinMaxSize()
-{
-	return fMinMax;
-}
-
-void damn::Space::SetSize( const BRect &size )
-{
-	Object::SetSize( size );
 }
 
 //-----------------------------------------------------------------------------

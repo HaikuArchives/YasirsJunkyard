@@ -26,58 +26,64 @@
  */
 
 //-----------------------------------------------------------------------------
+#ifndef DAMN_DLE_INTERNAL_H
+#define DAMN_DLE_INTERNAL_H
+//-----------------------------------------------------------------------------
 //-------------------------------------
+#include <interface/Rect.h>
 //-------------------------------------
-#include "../BMenuField.h"
+#include "Core.h"
 //-----------------------------------------------------------------------------
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
-	Object( this )
-{
-	SetDivider( 0.0f );
-}
+//	printf( "Adjust1:" ); rect.PrintToStream();
+//	printf( "Forced :" ); ci->object->GetForcedSize().PrintToStream();
+//	rect = ci->object->ForcedClip( rect );
+//	printf( "Adjust2:" ); rect.PrintToStream();
 
-dle::BMenuField::~BMenuField()
-{
-}
+#define FORCESIZE( ci, rect ) \
+	rect = ci->object->ForcedClip( rect );
 
-void dle::BMenuField::FrameResized( float new_width, float new_height )
-{
-	ReLayout();
-}
+#define ADDBORDERSPACE( ci, rect ) \
+	if( !ci->objectisgroup ) \
+	{ \
+		float horzinner = ci->object->GetInnerLeft() + ci->object->GetInnerRight(); \
+		float vertinner = ci->object->GetInnerTop() + ci->object->GetInnerBottom(); \
+		rect.horz.min += horzinner; \
+ 		rect.horz.max += horzinner; \
+		rect.vert.min += vertinner; \
+		rect.vert.max += vertinner; \
+	}
 
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
-{
-	float width;
-	float height;
-	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
-}
+#define REMOVEBORDERSPACE( vi, rect ) \
+	if( !ci->objectisgroup ) \
+	{ \
+		rect.left += ci->object->GetInnerLeft(); \
+		rect.right -= ci->object->GetInnerRight(); \
+		rect.top += ci->object->GetInnerTop(); \
+		rect.bottom -= ci->object->GetInnerBottom(); \
+	}
 
-void dle::BMenuField::SetSize( const BRect &size )
+#define ADJUSTRECT( ci, rect ) \
+	FORCESIZE( ci, rect ); \
+	ADDBORDERSPACE( ci, rect );
+
+#define DEADJUSTRECT( vi, rect ) \
+	REMOVEBORDERSPACE( vi, rect );
+
+namespace dle
 {
-	Object::SetSize( size );
+	template<class T> T min( T a, T b ) { return a<b?a:b; }
+	template<class T> T max( T a, T b ) { return a>b?a:b; }
+
+	class DefaultSettings : public Settings
+	{
+	public:
+		DefaultSettings();
+
+		const Settings *GetParentSettings() const;
+	};
 }
 
 //-----------------------------------------------------------------------------
+#endif
 
-void dle::BMenuField::MouseDown( BPoint where )
-{
-	if( SendMouseEventToParent() )
-		Parent()->MouseDown( ConvertToParent(where) );
-	else
-		::BMenuField::MouseDown( where );
-}
-
-void dle::BMenuField::MouseUp( BPoint where )
-{
-//	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
-}
-
-//-----------------------------------------------------------------------------

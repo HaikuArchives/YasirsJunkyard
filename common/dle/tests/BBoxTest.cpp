@@ -27,57 +27,72 @@
 
 //-----------------------------------------------------------------------------
 //-------------------------------------
+#include <app/Application.h>
 //-------------------------------------
-#include "../BMenuField.h"
+#include "dle/BBox.h"
+#include "dle/DebugView.h"
+#include "dle/Split.h"
+#include "dle/Window.h"
 //-----------------------------------------------------------------------------
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
-	Object( this )
+void DumpViewTree( BView *view )
 {
-	SetDivider( 0.0f );
-}
-
-dle::BMenuField::~BMenuField()
-{
-}
-
-void dle::BMenuField::FrameResized( float new_width, float new_height )
-{
-	ReLayout();
-}
-
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
-{
-	float width;
-	float height;
-	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
-}
-
-void dle::BMenuField::SetSize( const BRect &size )
-{
-	Object::SetSize( size );
+	
 }
 
 //-----------------------------------------------------------------------------
 
-void dle::BMenuField::MouseDown( BPoint where )
+class TestWindow : public dle::Window
 {
-	if( SendMouseEventToParent() )
-		Parent()->MouseDown( ConvertToParent(where) );
-	else
-		::BMenuField::MouseDown( where );
-}
+public:
+	TestWindow() : dle::Window( BRect(100,100,1990,199), "DLE Test1", B_TITLED_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL, 0 )
+	{
+		dle::BBox *box = new dle::BBox( "Wheeeee" );
+		{
+			dle::VSplit *vs = new dle::VSplit();
+			{
+				dle::DebugView *dv = new dle::DebugView( "", 0, 0, 0 );
+				dv->ForceWidth( dle::MinMax1(10,20) );
+				dv->ForceHeight( dle::MinMax1(10,20) );
+				vs->AddObject( dv, 1.0f );
 
-void dle::BMenuField::MouseUp( BPoint where )
+				dv = new dle::DebugView( "", 0, 0, 0 );
+//				dv->ForceWidth( dle::MinMax1(0,dle::Object::kMaxSize) );
+//				dv->ForceHeight( dle::MinMax1(0,dle::Object::kMaxSize) );
+				vs->AddObject( dv, 1.0f );
+			}
+			box->AddObject( vs );
+		}
+		AddObject( box );
+
+		Show();
+	}
+
+	~TestWindow()
+	{
+	}
+	
+	bool QuitRequested()
+	{
+		be_app->PostMessage( B_QUIT_REQUESTED );
+		return true;
+	}
+private:
+};
+
+//-----------------------------------------------------------------------------
+
+int main()
 {
-//	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
+	BApplication app( "application/x-vnd.dleRednex-DLEScrollViewTest" );
+	
+	/*TestWindow *win =*/ new TestWindow;
+	app.Run();	
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
+
+
+
+

@@ -1,0 +1,22 @@
+%all! == <<
+	%ScrollViewTest
+	%LayoutSpacingTest
+	%BBoxTest
+
+%ScrollViewTest == ScrollViewTest.cpp \
+	+inc_sp=(../..) \
+	+lib=(..%dle.a) -lbe \
+	+optimize=3 \
+	:exe
+
+%LayoutSpacingTest == LayoutSpacingTest.cpp \
+	+inc_sp=(../..) \
+	+lib=(..%dle.a) -lbe \
+	+optimize=3 \
+	:exe
+
+%BBoxTest == BBoxTest.cpp \
+	+inc_sp=(../..) \
+	+lib=(..%dle.a) -lbe \
+	+optimize=3 \
+	:exe

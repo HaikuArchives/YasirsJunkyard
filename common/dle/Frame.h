@@ -26,58 +26,49 @@
  */
 
 //-----------------------------------------------------------------------------
+#ifndef DAMN_DLE_FRAME_H
+#define DAMN_DLE_FRAME_H
+//-----------------------------------------------------------------------------
 //-------------------------------------
+#include <interface/View.h>
 //-------------------------------------
-#include "../BMenuField.h"
+#include "Group.h"
 //-----------------------------------------------------------------------------
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
-	Object( this )
+namespace dle
 {
-	SetDivider( 0.0f );
-}
+	class Frame : public ::BView, public Group
+	{
+	public:
+		enum style { LOWERED, RAISED, FANCY_LOWERED, FANCY_RAISED, LOWERED_RAISED, RAISED_LOWERED };
+	
+		Frame( style border=RAISED_LOWERED );
 
-dle::BMenuField::~BMenuField()
-{
-}
+	protected:
+		MinMax2 GetMinMaxSize();
+		void SetSize( const BRect &size );
 
-void dle::BMenuField::FrameResized( float new_width, float new_height )
-{
-	ReLayout();
-}
+		void AttachedToWindow();
 
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
-{
-	float width;
-	float height;
-	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
-}
+		void Draw( BRect updateRect );
+		void MouseDown( BPoint where ) { if(Parent()) Parent()->MouseDown(ConvertToParent(where)); }
+		void MouseUp( BPoint where ) { if(Parent()) Parent()->MouseUp(ConvertToParent(where)); }
 
-void dle::BMenuField::SetSize( const BRect &size )
-{
-	Object::SetSize( size );
-}
+	private:
+		float GetBorderSize() const;
+		void DrawBorder( const rgb_color &c1, const rgb_color &c2, const BRect &rect );
 
-//-----------------------------------------------------------------------------
+		style		fBorderStyle;
+		rgb_color	fHighColor;
+		rgb_color	fLowColor;
 
-void dle::BMenuField::MouseDown( BPoint where )
-{
-	if( SendMouseEventToParent() )
-		Parent()->MouseDown( ConvertToParent(where) );
-	else
-		::BMenuField::MouseDown( where );
-}
-
-void dle::BMenuField::MouseUp( BPoint where )
-{
-//	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
+		rgb_color	fFancyHigh1Color;
+		rgb_color	fFancyLow1Color;
+		rgb_color	fFancyHigh2Color;
+		rgb_color	fFancyLow2Color;
+	};
 }
 
 //-----------------------------------------------------------------------------
+#endif
+

@@ -29,11 +29,13 @@
 #include <stdio.h>
 #include <string.h>
 //-------------------------------------
+#include <interface/ScrollBar.h>
 //-------------------------------------
-#include "../DamnLayoutEngine.h"
+#include "../AutoScrollView.h"
+#include "../Internal.h"
 //-----------------------------------------------------------------------------
 
-damn::AutoScrollView::AutoScrollView() :
+dle::AutoScrollView::AutoScrollView() :
 	BView( BRect(0,0,0,0), "AutoScrollView", B_FOLLOW_NONE, B_WILL_DRAW ),
 	Object( this )
 {
@@ -44,37 +46,37 @@ damn::AutoScrollView::AutoScrollView() :
 	fScrollView = NULL;
 }
 
-void damn::AutoScrollView::AddObject( Object *object )
+void dle::AutoScrollView::AddObject( Object *object )
 {
 	fObject = object;
 	fView->AddChild( fObject->GetView() );
 }
 
-damn::MinMax2 damn::AutoScrollView::GetMinMaxSize()
+dle::MinMax2 dle::AutoScrollView::GetMinMaxSize()
 {
 	if( fObject )
 	{
 		MinMax2 mm = fObject->GetMinMaxSize();
-		fObject->SetSize( BRect(0,0,mm.hmin-1,mm.vmin-1) );
-		mm.hmax = mm.hmin;
-		mm.vmax = mm.vmin;
-		mm.hmin = mm.hmax<32 ? mm.hmax : 32;
-		mm.vmin = mm.vmax<32 ? mm.vmax : 32;
+		fObject->SetSize( BRect(0,0,mm.horz.min-1,mm.vert.min-1) );
+		mm.horz.max = mm.horz.min;
+		mm.vert.max = mm.vert.min;
+		mm.horz.min = mm.horz.max<32 ? mm.horz.max : 32;
+		mm.vert.min = mm.vert.max<32 ? mm.vert.max : 32;
 		return mm;
 	}
 	else
 		return MinMax2( 32,32, 32,32 );
 }
 
-void damn::AutoScrollView::SetSize( const BRect &size )
+void dle::AutoScrollView::SetSize( const BRect &size )
 {
 	Object::SetSize( size );
 
 	if( !fObject ) return;
 
-	damn::MinMax2 mm = fObject->GetMinMaxSize();
+	dle::MinMax2 mm = fObject->GetMinMaxSize();
 	BRect bounds = Bounds();
-	if( mm.hmin>bounds.Width()+1 || mm.vmin>bounds.Height()+1 )
+	if( mm.horz.min>bounds.Width()+1 || mm.vert.min>bounds.Height()+1 )
 	{
 		bool needhscrollbar = false;
 		bool needvscrollbar = false;
@@ -82,11 +84,11 @@ void damn::AutoScrollView::SetSize( const BRect &size )
 		float width = bounds.Width()+1;
 		float height = bounds.Height()+1;
 
-		if( mm.hmin > width ) { height-=B_H_SCROLL_BAR_HEIGHT+1; needhscrollbar=true; }
-		else if( mm.hmax < width ) width = mm.hmax;
-		if( mm.vmin > height ) { width-=B_V_SCROLL_BAR_WIDTH+1; needvscrollbar=true; }
-		else if( mm.vmax < height ) height = mm.vmax;
-		if( !needhscrollbar && mm.hmin>width ) { height-=B_H_SCROLL_BAR_HEIGHT+1; needhscrollbar=true; }
+		if( mm.horz.min > width ) { height-=B_H_SCROLL_BAR_HEIGHT+1; needhscrollbar=true; }
+		else if( mm.horz.max < width ) width = mm.horz.max;
+		if( mm.vert.min > height ) { width-=B_V_SCROLL_BAR_WIDTH+1; needvscrollbar=true; }
+		else if( mm.vert.max < height ) height = mm.vert.max;
+		if( !needhscrollbar && mm.horz.min>width ) { height-=B_H_SCROLL_BAR_HEIGHT+1; needhscrollbar=true; }
 
 		if( !fScrollView )
 		{
@@ -110,15 +112,15 @@ void damn::AutoScrollView::SetSize( const BRect &size )
 		{
 			if( !fHorScrollBar )
 			{
-				fHorScrollBar = new BScrollBar( BRect(0,height,width-1,height+B_H_SCROLL_BAR_HEIGHT), "hscrollbar", fScrollView, 0, mm.hmin-width, B_HORIZONTAL );
+				fHorScrollBar = new BScrollBar( BRect(0,height,width-1,height+B_H_SCROLL_BAR_HEIGHT), "hscrollbar", fScrollView, 0, mm.horz.min-width, B_HORIZONTAL );
 				fScrollView->ScrollTo( 0.0f, fScrollView->Bounds().LeftTop().y );
 				AddChild( fHorScrollBar );
 			}
 			else
 				fHorScrollBar->ResizeTo( width-1, B_H_SCROLL_BAR_HEIGHT );
 
-			fHorScrollBar->SetRange( 0, mm.hmin-width );
-			fHorScrollBar->SetProportion( width/mm.hmin );
+			fHorScrollBar->SetRange( 0, mm.horz.min-width );
+			fHorScrollBar->SetProportion( width/mm.horz.min );
 		}
 		
 		if( !needvscrollbar && fVerScrollBar )
@@ -131,7 +133,7 @@ void damn::AutoScrollView::SetSize( const BRect &size )
 		{
 			if( !fVerScrollBar )
 			{
-				fVerScrollBar = new BScrollBar( BRect(width,0,width+B_V_SCROLL_BAR_WIDTH,height-1), "vscrollbar", fScrollView, 0, mm.vmin-height, B_VERTICAL );
+				fVerScrollBar = new BScrollBar( BRect(width,0,width+B_V_SCROLL_BAR_WIDTH,height-1), "vscrollbar", fScrollView, 0, mm.vert.min-height, B_VERTICAL );
 				fScrollView->ScrollTo( fScrollView->Bounds().LeftTop().x, 0.0f );
 				fScrollView->ScrollTo( 0, 0 );
 				AddChild( fVerScrollBar );
@@ -139,12 +141,12 @@ void damn::AutoScrollView::SetSize( const BRect &size )
 			else
 				fVerScrollBar->ResizeTo( B_V_SCROLL_BAR_WIDTH, height-1 );
 
-			fVerScrollBar->SetRange( 0, mm.vmin-height );
-			fVerScrollBar->SetProportion( height/mm.vmin );
+			fVerScrollBar->SetRange( 0, mm.vert.min-height );
+			fVerScrollBar->SetProportion( height/mm.vert.min );
 		}
 
 		BPoint rlt = fScrollView->Bounds().LeftTop();
-		fObject->SetSize( BRect(0,0,needhscrollbar?mm.hmin-1:width-1,needvscrollbar?mm.vmin-1:height-1).OffsetBySelf(needhscrollbar?-rlt.x:0,needvscrollbar?-rlt.y:0) );
+		fObject->SetSize( BRect(0,0,needhscrollbar?mm.horz.min-1:width-1,needvscrollbar?mm.vert.min-1:height-1).OffsetBySelf(needhscrollbar?-rlt.x:0,needvscrollbar?-rlt.y:0) );
 		if( !fObject->GetView()->Window() )
 			fScrollView->AddChild( fObject->GetView() );
 	}

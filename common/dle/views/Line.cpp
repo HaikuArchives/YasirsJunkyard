@@ -26,58 +26,63 @@
  */
 
 //-----------------------------------------------------------------------------
+#include <stdio.h>
+#include <string.h>
 //-------------------------------------
 //-------------------------------------
-#include "../BMenuField.h"
+#include "../Line.h"
 //-----------------------------------------------------------------------------
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
+dle::HLine::HLine( style border ) :
+	BView( BRect(0,0,0,0), NULL, B_FOLLOW_NONE, B_WILL_DRAW ),
 	Object( this )
 {
-	SetDivider( 0.0f );
+	fBorderStyle = border;
+
+	fHighColor = tint_color( ui_color(B_PANEL_BACKGROUND_COLOR), B_LIGHTEN_MAX_TINT );
+	fLowColor = tint_color( ui_color(B_PANEL_BACKGROUND_COLOR), B_DARKEN_3_TINT );
 }
 
-dle::BMenuField::~BMenuField()
+dle::MinMax2 dle::HLine::GetMinMaxSize()
 {
+	return MinMax2( 0,kMaxSize, 2,2 );
 }
 
-void dle::BMenuField::FrameResized( float new_width, float new_height )
+void dle::HLine::Draw( BRect updateRect )
 {
-	ReLayout();
-}
+	BRect bounds = Bounds();
 
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
-{
-	float width;
-	float height;
-	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
-}
-
-void dle::BMenuField::SetSize( const BRect &size )
-{
-	Object::SetSize( size );
+	BeginLineArray( 2 );
+	AddLine( BPoint(bounds.left,bounds.top), BPoint(bounds.right,bounds.top), fHighColor );
+	AddLine( BPoint(bounds.left,bounds.bottom), BPoint(bounds.right,bounds.bottom), fLowColor );
+	EndLineArray();
 }
 
 //-----------------------------------------------------------------------------
 
-void dle::BMenuField::MouseDown( BPoint where )
+dle::VLine::VLine( style border ) :
+	BView( BRect(0,0,0,0), NULL, B_FOLLOW_NONE, B_WILL_DRAW ),
+	Object( this )
 {
-	if( SendMouseEventToParent() )
-		Parent()->MouseDown( ConvertToParent(where) );
-	else
-		::BMenuField::MouseDown( where );
+	fBorderStyle = border;
+
+	fHighColor = tint_color( ui_color(B_PANEL_BACKGROUND_COLOR), B_LIGHTEN_MAX_TINT );
+	fLowColor = tint_color( ui_color(B_PANEL_BACKGROUND_COLOR), B_DARKEN_3_TINT );
 }
 
-void dle::BMenuField::MouseUp( BPoint where )
+dle::MinMax2 dle::VLine::GetMinMaxSize()
 {
-//	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
+	return MinMax2( 2,2, 0,kMaxSize );
+}
+
+void dle::VLine::Draw( BRect updateRect )
+{
+	BRect bounds = Bounds();
+
+	BeginLineArray( 2 );
+	AddLine( BPoint(bounds.left,bounds.top), BPoint(bounds.left,bounds.bottom), fHighColor );
+	AddLine( BPoint(bounds.right,bounds.top), BPoint(bounds.right,bounds.bottom), fLowColor );
+	EndLineArray();
 }
 
 //-----------------------------------------------------------------------------

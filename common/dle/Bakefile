@@ -1,8 +1,0 @@
-lib/liblayoutengine.a -> library:static
-	[
-		core/^object:static
-		beviews/^object:static
-		views/^object:static
-	]
-{
-}

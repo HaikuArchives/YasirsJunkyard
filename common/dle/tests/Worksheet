@@ -1,0 +1,11 @@
+cd /junkyard/common/dle/tests ; . ../../../setupenv.sh
+--------------------------------------------------------------------------------
+rm -r ../../../build #clean
+bake all
+bake ../../liblayoutengine.a
+bake ../core/Settings.o
+bake all && ../../../build/BeOS-BePC/beos_intel_gnupro/common/dle/tests/ScrollViewTest
+bake all && ../../../build/BeOS-BePC/beos_intel_gnupro/common/dle/tests/BBoxTest
+--------------------------------------------------------------------------------
+/boot/develop/experimental/debugger/bdb ../../../build/BeOS-BePC/beos_intel_gnupro/common/dle/tests/BBoxTest
+

@@ -26,41 +26,38 @@
  */
 
 //-----------------------------------------------------------------------------
-#include <stdio.h>
-#include <string.h>
+#ifndef DAMN_DLE_AUTOSCROLLVIEW_H
+#define DAMN_DLE_AUTOSCROLLVIEW_H
+//-----------------------------------------------------------------------------
 //-------------------------------------
+#include <interface/View.h>
+class BScrollBar;
 //-------------------------------------
-#include "../DamnLayoutEngine.h"
+#include "Core.h"
 //-----------------------------------------------------------------------------
 
-damn::DebugView::DebugView( const char *name, uchar r, uchar g, uchar b, uchar a ) :
-	BView( BRect(0,0,0,0), name, B_FOLLOW_NONE, B_WILL_DRAW ),
-	Object( this )
+namespace dle
 {
-	BView::SetViewColor( r, g, b, a );
+	class AutoScrollView : public BView, public Object
+	{
+	public:
+		AutoScrollView();
 
-	fMinMax = MinMax2( 10,20, 5,10 );
+		void AddObject( Object *object );
 
-	strncpy( fName, name, sizeof(fName) );
-	fName[sizeof(fName)-1] = '\0';
-}
+	protected:
+		MinMax2 GetMinMaxSize();
+		void SetSize( const BRect &size );
 
-void damn::DebugView::SetMinMaxSize( const MinMax2 &mm )
-{
-	fMinMax = mm;
-}
+	private:
+		Object		*fObject;
 
-damn::MinMax2 damn::DebugView::GetMinMaxSize()
-{
-	return fMinMax;
-}
-
-void damn::DebugView::SetSize( const BRect &size )
-{
-	printf( "damn::DebugView::SetSize:\n" );
-	size.PrintToStream();
-	Object::SetSize( size );
+		BScrollBar	*fHorScrollBar;
+		BScrollBar	*fVerScrollBar;
+		BView		*fScrollView;
+	};
 }
 
 //-----------------------------------------------------------------------------
+#endif
 

@@ -26,58 +26,54 @@
  */
 
 //-----------------------------------------------------------------------------
+#include <assert.h>
 //-------------------------------------
 //-------------------------------------
-#include "../BMenuField.h"
+#include "../BSlider.h"
 //-----------------------------------------------------------------------------
+// Bug?: BSlider::GetPreferredSize() returns the current width as the prefered width!!!!
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
+dle::BSlider::BSlider( const char *label, BMessage *message, int32 minvalue, int maxvalue, thumb_style thumbtype, uint32 flags ) :
+	::BSlider( BRect(0,0,0,0), NULL, label, message, minvalue, maxvalue, thumbtype, B_FOLLOW_NONE, flags ),
 	Object( this )
 {
-	SetDivider( 0.0f );
 }
 
-dle::BMenuField::~BMenuField()
+dle::BSlider::~BSlider()
 {
 }
 
-void dle::BMenuField::FrameResized( float new_width, float new_height )
+dle::MinMax2 dle::BSlider::GetMinMaxSize()
 {
-	ReLayout();
-}
-
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
-{
+	assert( Window() != NULL );
+	
 	float width;
 	float height;
 	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
+//	return MinMax2( width+1,kMaxSize, height+1,height+1 );
+//	printf( "BSlider:GetMinMaxSize() %p: %f %f\n", this, width, height );
+	return MinMax2( 32,kMaxSize, height+1,height+1 );
 }
 
-void dle::BMenuField::SetSize( const BRect &size )
+void dle::BSlider::SetSize( const BRect &size )
 {
 	Object::SetSize( size );
 }
 
 //-----------------------------------------------------------------------------
 
-void dle::BMenuField::MouseDown( BPoint where )
+void dle::BSlider::MouseDown( BPoint where )
 {
 	if( SendMouseEventToParent() )
 		Parent()->MouseDown( ConvertToParent(where) );
 	else
-		::BMenuField::MouseDown( where );
+		::BSlider::MouseDown( where );
 }
 
-void dle::BMenuField::MouseUp( BPoint where )
+void dle::BSlider::MouseUp( BPoint where )
 {
 //	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
+	::BSlider::MouseUp( where );
 }
 
 //-----------------------------------------------------------------------------

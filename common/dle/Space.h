@@ -26,58 +26,48 @@
  */
 
 //-----------------------------------------------------------------------------
+#ifndef DAMN_DLE_SPACE_H
+#define DAMN_DLE_SPACE_H
+//-----------------------------------------------------------------------------
 //-------------------------------------
+#include <interface/View.h>
 //-------------------------------------
-#include "../BMenuField.h"
+#include "Core.h"
 //-----------------------------------------------------------------------------
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
-	Object( this )
+namespace dle
 {
-	SetDivider( 0.0f );
-}
+	class Space : public BView, public Object
+	{
+	public:
+		Space();
 
-dle::BMenuField::~BMenuField()
-{
-}
+		void SetMinMaxSize( const MinMax2 &mm );
 
-void dle::BMenuField::FrameResized( float new_width, float new_height )
-{
-	ReLayout();
-}
+	protected:
+		void AttachedToWindow() { if(Parent()) SetViewColor(Parent()->ViewColor()); }
 
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
-{
-	float width;
-	float height;
-	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
-}
+		MinMax2 GetMinMaxSize();
+		void SetSize( const BRect &size );
+	private:
+		MinMax2		fMinMax;
+	};
 
-void dle::BMenuField::SetSize( const BRect &size )
-{
-	Object::SetSize( size );
-}
+	//-------------------------------------
 
-//-----------------------------------------------------------------------------
+	class HSpace : public Space
+	{
+	public:
+		HSpace( float min=0, float max=1000000 ) { SetMinMaxSize(MinMax2(min,max,0,0)); }
+	};
 
-void dle::BMenuField::MouseDown( BPoint where )
-{
-	if( SendMouseEventToParent() )
-		Parent()->MouseDown( ConvertToParent(where) );
-	else
-		::BMenuField::MouseDown( where );
-}
-
-void dle::BMenuField::MouseUp( BPoint where )
-{
-//	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
+	class VSpace : public Space
+	{
+	public:
+		VSpace( float min=0, float max=1000000 ) { SetMinMaxSize(MinMax2(0,0,min,max)); }
+	};
 }
 
 //-----------------------------------------------------------------------------
+#endif
+

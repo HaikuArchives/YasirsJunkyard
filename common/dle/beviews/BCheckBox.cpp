@@ -28,20 +28,20 @@
 //-----------------------------------------------------------------------------
 //-------------------------------------
 //-------------------------------------
-#include "../DamnLayoutEngine.h"
+#include "../BCheckBox.h"
 //-----------------------------------------------------------------------------
 
-damn::BCheckBox::BCheckBox( const char *name, const char *label, BMessage *message, uint32 flags ) :
-	::BCheckBox( BRect(0,0,0,0), name, label, message, B_FOLLOW_NONE, flags ),
+dle::BCheckBox::BCheckBox( const char *label, BMessage *message, uint32 flags ) :
+	::BCheckBox( BRect(0,0,0,0), NULL, label, message, B_FOLLOW_NONE, flags ),
 	Object( this )
 {
 }
 
-damn::BCheckBox::~BCheckBox()
+dle::BCheckBox::~BCheckBox()
 {
 }
 
-damn::MinMax2 damn::BCheckBox::GetMinMaxSize()
+dle::MinMax2 dle::BCheckBox::GetMinMaxSize()
 {
 //	float stringwidth = StringWidth( Label() );
 //	float width = 20 + ceil(stringwidth) + 20;
@@ -55,13 +55,29 @@ damn::MinMax2 damn::BCheckBox::GetMinMaxSize()
 	float width;
 	float height;
 	GetPreferredSize( &width, &height );
-	return MinMax2( width,width, height,height );
+//	printf( "BCheckBox:GetMinMaxSize() %p: %f %f\n", this, width, height );
+	return MinMax2( width+1,width+1, height+1,height+1 );
 }
 
-void damn::BCheckBox::SetSize( const BRect &size )
+void dle::BCheckBox::SetSize( const BRect &size )
 {
 	Object::SetSize( size );
 }
 
 //-----------------------------------------------------------------------------
 
+void dle::BCheckBox::MouseDown( BPoint where )
+{
+	if( SendMouseEventToParent() )
+		Parent()->MouseDown( ConvertToParent(where) );
+	else
+		::BCheckBox::MouseDown( where );
+}
+
+void dle::BCheckBox::MouseUp( BPoint where )
+{
+//	msg->PrintToStream();
+	::BCheckBox::MouseUp( where );
+}
+
+//-----------------------------------------------------------------------------

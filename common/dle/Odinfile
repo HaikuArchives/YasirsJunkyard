@@ -1,0 +1,30 @@
+%dle.a == %dle.sm +inc_sp=(../../common) +optimize=3 :a
+%dle_dbg.a == %dle.sm +inc_sp=(../../common) +define=DEBUG +debug :a
+
+%dle.sm == << EOF
+	core/Core.cpp
+	core/Group.cpp
+	core/RootView.cpp
+	core/Settings.cpp
+	core/Space.cpp
+	core/Split.cpp
+	core/Utils.cpp
+	core/Window.cpp           
+
+	beviews/BBox.cpp
+	beviews/BButton.cpp
+	beviews/BCheckBox.cpp
+	beviews/BMenuBar.cpp
+	beviews/BMenuField.cpp
+	beviews/BSlider.cpp
+	beviews/BStringView.cpp
+	beviews/BTextControl.cpp
+
+	views/AutoScrollView.cpp
+	views/DebugView.cpp
+	views/Frame.cpp
+	views/LoadView.cpp
+	views/Line.cpp
+	views/ProgressBar.cpp
+	views/View.cpp
+EOF

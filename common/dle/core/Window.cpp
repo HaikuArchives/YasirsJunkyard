@@ -26,24 +26,33 @@
  */
 
 //-----------------------------------------------------------------------------
+#include <assert.h>
 #include <stdio.h>
 //-------------------------------------
+#include <app/Message.h>
+#include <app/MessageQueue.h>
 //-------------------------------------
-#include "../DamnLayoutEngine.h"
+#include "../Window.h"
 //-----------------------------------------------------------------------------
 
-damn::Window::Window( BRect frame, const char *title, window_look look, window_feel feel, uint32 flags, uint32 workspace ) :
+dle::Window::Window( BRect frame, const char *title, window_look look, window_feel feel, uint32 flags, uint32 workspace ) :
 	BWindow( frame, title, look, feel, flags, workspace )
 {
 	fRoot = NULL;
+	fHResizable = !((flags&B_NOT_RESIZABLE) || (flags&B_NOT_H_RESIZABLE));
+	fVResizable = !((flags&B_NOT_RESIZABLE) || (flags&B_NOT_V_RESIZABLE));
 }
 
-damn::Window::~Window()
+dle::Window::~Window()
 {
 }
 
-void damn::Window::FrameResized( float /*new_width*/, float /*new_height*/ )
+void dle::Window::FrameResized( float new_width, float new_height )
 {
+//	printf( "WINDOW:FRAMERESIZE:RESIZING TO: %fx%f (bounds)\n", Bounds().Width(), Bounds().Height() );
+//	printf( "WINDOW:FRAMERESIZE:RESIZING TO: %fx%f (frame)\n", Frame().Width(), Frame().Height() );
+//	printf( "WINDOW:FRAMERESIZE:RESIZING TO: %fx%f (args)\n", new_width, new_height );
+
 	DisableUpdates();
 	BeginViewTransaction();
 
@@ -54,28 +63,118 @@ void damn::Window::FrameResized( float /*new_width*/, float /*new_height*/ )
 	EnableUpdates();
 }
 
-void damn::Window::AddObject( Object *object )
+void dle::Window::ReLayout()
+{
+//	ResizeChild();
+//	fRoot->SetSize( Bounds() );
+
+	dle::MinMax2 mm = fRoot->GetMinMaxSize();
+//	printf( "%f %f %f %f\n", mm.hmin-1, mm.hmax-1, mm.vmin-1, mm.vmax-1 );
+	SetSizeLimits( mm.horz.min-1, mm.horz.max-1, mm.vert.min-1, mm.vert.max-1 );
+
+	float width = Bounds().Width()+1;
+	float height = Bounds().Height()+1;
+	
+	if( width<mm.horz.min || width>mm.horz.max || height<mm.vert.min || height>mm.vert.max )
+	{
+		if( width>mm.horz.max ) width = mm.horz.max;
+		if( width<mm.horz.min ) width = mm.horz.min;
+		if( height>mm.vert.max ) height = mm.vert.max;
+		if( height<mm.vert.min ) height = mm.vert.min;
+//		printf( "WINDOW:RELAYOUT:RESIZING TO: %fx%f\n", width-1, height-1 );
+
+#if 0
+		printf( "MESSAGE QUE:\n" );
+		BMessage *msg;
+		for( int32 i=0; (msg=MessageQueue()->FindMessage(i))!=NULL; i++ )
+		{
+			printf( "MESSAGE #%d\n", i );
+			msg->PrintToStream();
+		}
+#endif
+
+		// Realy nasty: remove all pending resize's:
+		BMessage *msg;
+		while( (msg=MessageQueue()->FindMessage(B_WINDOW_RESIZED,0)) != NULL )
+			MessageQueue()->RemoveMessage( msg );
+		
+
+		ResizeTo( width-1, height-1 );
+	}
+	else
+	{
+		fRoot->SetSize( Bounds() );
+	}
+}
+
+#if 0
+void dle::Window::ResizeChild()
+{
+//	DisableUpdates();
+//	Window()->BeginViewTransaction();
+#if 0
+	dle::MinMax2 mm = fRoot->GetMinMaxSize();
+	BRect aligned = AlignRect( Bounds(), mm, CENTER );
+	fRoot->SetSize( aligned );
+//	if( !fRoot->GetView()->Window() ) // FIXME: revert!
+//		AddChild( fRoot->GetView() );
+#else
+//	fRoot->GetView()->SetViewColor( this->ViewColor() );
+	fRoot->SetSize( Bounds() );
+#endif
+//	Window()->EndViewTransaction();
+//	EnableUpdates();
+}
+#endif
+
+void dle::Window::AddObject( Object *object )
 {
 	assert( object != NULL );
 	assert( fRoot == NULL );
 	
 	fRoot = object;
-
+	
 	AddChild( fRoot->GetView() );
 
-	damn::MinMax2 mm = fRoot->GetMinMaxSize();
+	dle::MinMax2 mm = fRoot->GetMinMaxSize();
 //	printf( "%f %f %f %f\n", mm.hmin-1, mm.hmax-1, mm.vmin-1, mm.vmax-1 );
-	SetSizeLimits( mm.hmin-1, mm.hmax-1, mm.vmin-1, mm.vmax-1 );
+	SetSizeLimits( mm.horz.min-1, mm.horz.max-1, mm.vert.min-1, mm.vert.max-1 );
+	if( fHResizable )
+	{
+		if( mm.horz.min==mm.horz.max )
+			SetFlags( Flags() | B_NOT_H_RESIZABLE );
+		else
+			SetFlags( Flags() & ~B_NOT_H_RESIZABLE );
+	}
+	if( fVResizable )
+	{
+		if( mm.vert.min==mm.vert.max )
+			SetFlags( Flags() | B_NOT_V_RESIZABLE );
+		else
+			SetFlags( Flags() & ~B_NOT_V_RESIZABLE );
+	}
 	
 	float win_width = Bounds().Width()+1;
 	float win_height = Bounds().Height()+1;
-	if( win_width>mm.hmax ) win_width = mm.hmax;
-	if( win_width<mm.hmin ) win_width = mm.hmin;
-	if( win_height>mm.vmax ) win_height = mm.vmax;
-	if( win_height<mm.vmin ) win_height = mm.vmin;
-	ResizeTo( win_width-1, win_height-1 );
+	if( win_width>mm.horz.max ) win_width = mm.horz.max;
+	if( win_width<mm.horz.min ) win_width = mm.horz.min;
+	if( win_height>mm.vert.max ) win_height = mm.vert.max;
+	if( win_height<mm.vert.min ) win_height = mm.vert.min;
 
+	if( Bounds().Width()!=win_width-1 || Bounds().Height()!=win_height-1 )
+		ResizeTo( win_width-1, win_height-1 );
+		
 	fRoot->SetSize( Bounds() );
+}
+
+bool dle::Window::RemoveObject( Object *object )
+{
+	if( fRoot != object )
+		return false;
+	
+	RemoveChild( fRoot->GetView() );
+	fRoot = NULL;
+	return true;
 }
 
 //-----------------------------------------------------------------------------

@@ -28,36 +28,33 @@
 //-----------------------------------------------------------------------------
 //-------------------------------------
 //-------------------------------------
-#include "../DamnLayoutEngine.h"
+#include "../BStringView.h"
 //-----------------------------------------------------------------------------
 
-damn::BStringView::BStringView( const char *name, const char *text, uint32 flags ) :
-	::BStringView( BRect(0,0,0,0), name, text, B_FOLLOW_NONE, flags ),
+dle::BStringView::BStringView( const char *text, bool fittext, uint32 flags ) :
+	::BStringView( BRect(0,0,0,0), NULL, text, B_FOLLOW_NONE, flags ),
 	Object( this )
 {
+	fFit = fittext;
 }
 
-damn::BStringView::~BStringView()
+dle::BStringView::~BStringView()
 {
 }
 
-damn::MinMax2 damn::BStringView::GetMinMaxSize()
+dle::MinMax2 dle::BStringView::GetMinMaxSize()
 {
-//	float stringwidth = StringWidth( Text() );
-//	font_height fontheight;
-//	GetFontHeight( &fontheight );
-//	float height = 1 + ceil(fontheight.ascent+fontheight.descent+fontheight.leading) + 1;
-
-//	return MinMax2( 1+stringwidth+1,1+stringwidth+1, height,height );
-
 	float width;
 	float height;
 	GetPreferredSize( &width, &height );
-	return MinMax2( width,width, height,height );
 
+	if( fFit )
+		return MinMax2( width+1,width+1, height+1,height+1 );
+	else
+		return MinMax2( 0,kMaxSize, height+1,height+1 );
 }
 
-void damn::BStringView::SetSize( const BRect &size )
+void dle::BStringView::SetSize( const BRect &size )
 {
 	Object::SetSize( size );
 }

@@ -39,10 +39,10 @@ void DumpViewTree( BView *view )
 
 //-----------------------------------------------------------------------------
 
-class TestWindow : public damn::Window
+class TestWindow : public dle::Window
 {
 public:
-	TestWindow() : damn::Window( BRect(100,100,199,199), "DLE Test1", B_TITLED_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL, 0 )
+	TestWindow() : dle::Window( BRect(100,100,199,199), "DLE Test1", B_TITLED_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL, 0 )
 	{
 		Show();
 	}
@@ -85,53 +85,53 @@ int main()
 			vs->AddObject( dv );
 		win->AddObject( vs );
 #elif 0
-		hs = new damn::HSplit( 1 );
-			dv = new damn::DebugView( "v1", 255,0,0 );
-			dv->SetMinMaxSize( damn::MinMax2( 1,200, 1,200) );
+		hs = new dle::HSplit( 1 );
+			dv = new dle::DebugView( "v1", 255,0,0 );
+			dv->SetMinMaxSize( dle::MinMax2( 1,200, 1,200) );
 			hs->AddObject( dv, 1.0f );
 
-//			dv = new damn::DebugView( "v2", 0,255,0 );
-////			dv->SetMinMaxSize( damn::MinMax2( 1,1000, 1,1000) );
-//			dv->SetMinMaxSize( damn::MinMax2( 10,50, 10,50) );
-//			hs->AddObject( dv, damn::BOTTOM, 2.0f );
+//			dv = new dle::DebugView( "v2", 0,255,0 );
+////			dv->SetMinMaxSize( dle::MinMax2( 1,1000, 1,1000) );
+//			dv->SetMinMaxSize( dle::MinMax2( 10,50, 10,50) );
+//			hs->AddObject( dv, dle::BOTTOM, 2.0f );
 
-			bb = new damn::BButton( "b1", "Hitme", new BMessage('hit!') );
-			hs->AddObject( bb );//, damn::BOTTOM, 2.0f );
+			bb = new dle::BButton( "b1", "Hitme", new BMessage('hit!') );
+			hs->AddObject( bb );//, dle::BOTTOM, 2.0f );
 
-////			dv->SetMinMaxSize( damn::MinMax2( 1,1000, 1,1000) );
-//			dv->SetMinMaxSize( damn::MinMax2( 10,50, 10,50) );
-//			hs->AddObject( dv, damn::BOTTOM, 2.0f );
+////			dv->SetMinMaxSize( dle::MinMax2( 1,1000, 1,1000) );
+//			dv->SetMinMaxSize( dle::MinMax2( 10,50, 10,50) );
+//			hs->AddObject( dv, dle::BOTTOM, 2.0f );
 			
-			dv = new damn::DebugView( "v3", 255,0,0 );
-			dv->SetMinMaxSize( damn::MinMax2( 1,200, 1,200) );
+			dv = new dle::DebugView( "v3", 255,0,0 );
+			dv->SetMinMaxSize( dle::MinMax2( 1,200, 1,200) );
 			hs->AddObject( dv, 1.0f );
 		win->AddObject( hs );
 #elif 0
-		hs = new damn::HSplit( 0 );
+		hs = new dle::HSplit( 0 );
 		for( int i=0; i<10; i++ )
 		{
-			vs = new damn::VSplit( 1 );
+			vs = new dle::VSplit( 1 );
 			for( int j=0; j<10; j++ )
 			{
-				dv = new damn::DebugView( "v1", 255,0,0 );
-				dv->SetMinMaxSize( damn::MinMax2( 1,200, 1,200) );
+				dv = new dle::DebugView( "v1", 255,0,0 );
+				dv->SetMinMaxSize( dle::MinMax2( 1,200, 1,200) );
 				vs->AddObject( dv, 1.0f );
 			}
 			hs->AddObject( vs, 1.0f );
 		}
 		win->AddObject( hs );
 #elif 0
-		damn::VSplit *vs = new damn::VSplit( 0 );
+		dle::VSplit *vs = new dle::VSplit( 0 );
 		for( int i=0; i<8; i++ )
 		{
-			damn::HSplit *hs = new damn::HSplit( 0 );
+			dle::HSplit *hs = new dle::HSplit( 0 );
 			for( int j=0; j<8; j++ )
 			{
-				damn::VSplit *vs = new damn::VSplit( 1 );
+				dle::VSplit *vs = new dle::VSplit( 1 );
 				for( int k=0; k<8; k++ )
 				{
-					dv = new damn::DebugView( "v", i*255/7,j*255/7,k*255/7 );
-					dv->SetMinMaxSize( damn::MinMax2( 1,200, 1,200) );
+					dv = new dle::DebugView( "v", i*255/7,j*255/7,k*255/7 );
+					dv->SetMinMaxSize( dle::MinMax2( 1,200, 1,200) );
 					vs->AddObject( dv, 1.0f );
 				}
 				hs->AddObject( vs, 1.0f );
@@ -141,17 +141,17 @@ int main()
 		win->AddObject( vs );
 #else
 		win->Lock();
-		damn::AutoScrollView *asv = new damn::AutoScrollView;
-		damn::VSplit *vs = new damn::VSplit( 0 );
+		dle::AutoScrollView *asv = new dle::AutoScrollView;
+		dle::VSplit *vs = new dle::VSplit( 0 );
 		for( int i=0; i<4; i++ )
 		{
-			damn::HSplit *hs = new damn::HSplit( 0 );
+			dle::HSplit *hs = new dle::HSplit( 0 );
 			for( int j=0; j<8; j++ )
 			{
-				damn::VSplit *vs = new damn::VSplit( 1 );
+				dle::VSplit *vs = new dle::VSplit( 1 );
 				for( int k=0; k<4; k++ )
 				{
-					damn::BButton *bb = new damn::BButton( "but", "HitMe!", new BMessage('hit!') );
+					dle::BButton *bb = new dle::BButton( "but", "HitMe!", new BMessage('hit!') );
 					vs->AddObject( bb, 1.0f );
 				}
 				hs->AddObject( vs, 1.0f );
@@ -164,7 +164,7 @@ int main()
 #endif
 #endif
 	
-//	damn::MinMax2 mm = vs->GetMinMaxSize();
+//	dle::MinMax2 mm = vs->GetMinMaxSize();
 //	printf( "minmax: x:%f,%f y:%f,%f\n", mm.hmin,mm.hmax, mm.vmin,mm.vmax );
 //	vs->SetSize( BRect(0,0,8-1,12-1) );
 	

@@ -31,63 +31,11 @@
 //-------------------------------------
 #include <support/Debug.h>
 //-------------------------------------
-#include "../DamnLayoutEngine.h"
+#include "../Split.h"
+#include "../Internal.h"
 //-----------------------------------------------------------------------------
 
-template<class T> T min( T a, T b ) { return a<b?a:b; }
-template<class T> T max( T a, T b ) { return a>b?a:b; }
-
-//-----------------------------------------------------------------------------
-
-/** \class damn::Split
- * \ingroup DLE
- * A collection of Object objects.
- *
- */
-
-//-----------------------------------------------------------------------------
-
-damn::Split::Split( float spacing, align_t align ) :
-	BView(BRect(0,0,0,0), "split", B_FOLLOW_NONE, 0),
-	Group( this )
-{
-	assert( spacing >= 0 );
-//	assert( (align&(LEFTRIGHTMASK|TOPBOTTOMMASH)==0)  && ((align&LEFTRIGHTMASK)<=RIGHT) && ((align&TOPBOTTOMMASH)<=BOTTOM) );
-
-	SetSpacing( spacing );
-
-	fDefaultAlign = align;
-}
-
-damn::Split::~Split()
-{
-}
-
-void damn::Split::AttachedToWindow()
-{
-	if( Parent() )
-		SetViewColor( Parent()->ViewColor() );
-}
-
-void damn::Split::AddObject( Object *child, align_t align, float weight )
-{
-	assert( child != NULL );
-	assert( weight >= 0.0f );
-	
-	childinfo *c = new childinfo;
-	c->object = child;
-	c->weight = weight;
-	c->align = (align_t)(
-		((align&HMASK)==HDEFAULT) ? (fDefaultAlign&HMASK) : (align&HMASK) | 
-		((align&VMASK)==VDEFAULT) ? (fDefaultAlign&VMASK) : (align&VMASK));
-	
-	fChilds.AddItem( c );
-	fView->AddChild( child->GetView() );
-}
-
-//-----------------------------------------------------------------------------
-
-/** \class damn::HSplit
+/** \class dle::HSplit
  * \ingroup DLE
  * A horizontal splitter.
  *
@@ -95,49 +43,60 @@ void damn::Split::AddObject( Object *child, align_t align, float weight )
 
 //-----------------------------------------------------------------------------
 
-damn::HSplit::HSplit( float spacing, align_t align ) :
-	Split( spacing, align )
+dle::HSplit::HSplit() :
+	BView( BRect(0,0,0,0), "group", B_FOLLOW_NONE, B_WILL_DRAW ),
+	Group( this )
+{
+	InnerSpacing( false );
+}
+
+dle::HSplit::~HSplit()
 {
 }
 
-damn::HSplit::~HSplit()
+void dle::HSplit::AttachedToWindow()
 {
+	SetViewColor( GetColor() );
 }
 
-damn::MinMax2 damn::HSplit::GetMinMaxSize()
+dle::MinMax2 dle::HSplit::GetMinMaxSize()
 {
+	ASSERT_WITH_MESSAGE( fChilds.CountItems(), "A HSplit container must not be empty" );
+
 	float minheight = 0;
-	float maxheight = 0;
+	float maxheight = FLT_MAX;
 	float *minwidth = (float*)alloca( fChilds.CountItems()*sizeof(float) );
 	float *maxwidth = (float*)alloca( fChilds.CountItems()*sizeof(float) );
-
+	
 	for( int i=0; i<fChilds.CountItems(); i++ )
 	{
 		childinfo *ci = fChilds.ItemAt( i );
 		MinMax2 childminmax = ci->object->GetMinMaxSize();
+		ASSERT( childminmax.vert.min <= childminmax.vert.max );
+		ADJUSTRECT( ci, childminmax );
 
-		if( childminmax.vmin>minheight ) minheight = childminmax.vmin;
-		if( childminmax.vmax>maxheight ) maxheight = childminmax.vmax;
-		minwidth[i] = childminmax.hmin;
-		maxwidth[i] = childminmax.hmax;
+		ASSERT( childminmax.vert.min <= childminmax.vert.max );
+
+		if( childminmax.vert.min>minheight ) minheight = childminmax.vert.min;
+		if( childminmax.vert.max<maxheight ) maxheight = childminmax.vert.max;
+		minwidth[i] = childminmax.horz.min;
+		maxwidth[i] = childminmax.horz.max;
 	}
-	assert( maxheight>=minheight );
+	if( maxheight < minheight )
+		maxheight = minheight;
+//	ASSERT( maxheight>=minheight );
 
 	MinMax1	widthmm = SpreadCalcSize( minwidth, maxwidth, fChilds.CountItems() );
 
-	float hspacing = fHSpacingLeft + max(fHSpacingMid*(fChilds.CountItems()-1),0.0f) + fHSpacingRight;
-	widthmm.min += hspacing;
-	widthmm.max += hspacing;
-
-	return MinMax2( widthmm.min,widthmm.max, minheight+fVSpacingTop+fVSpacingBottom,maxheight+fVSpacingTop+fVSpacingBottom );
+	return MinMax2( widthmm.min,widthmm.max, minheight,maxheight );
 }
 
-void damn::HSplit::SetSize( const BRect &size )
+void dle::HSplit::SetSize( const BRect &size )
 {
-//	printf( "damn::HSplit::SetSize:\n" );
+//	printf( "dle::HSplit::SetSize:\n" );
 //	size.PrintToStream();
 
-	Split::SetSize( size );
+	Group::SetSize( size );
 
 	float *width = (float*)alloca( fChilds.CountItems() * sizeof(float) );
 	float *minwidth = (float*)alloca( fChilds.CountItems() * sizeof(float) );
@@ -148,36 +107,39 @@ void damn::HSplit::SetSize( const BRect &size )
 	{
 		childinfo *ci = fChilds.ItemAt( i );
 		MinMax2 childminmax = ci->object->GetMinMaxSize();
+		ADJUSTRECT( ci, childminmax );
 
-		minwidth[i] = childminmax.hmin;
-		maxwidth[i] = childminmax.hmax;
+		minwidth[i] = childminmax.horz.min;
+		maxwidth[i] = childminmax.horz.max;
 		weight[i] = ci->weight;
 	}
 
-	float hspacing = fHSpacingLeft + max(fHSpacingMid*(fChilds.CountItems()-1),0.0f) + fHSpacingRight;
-
-	Spread( minwidth, maxwidth, width, weight, fChilds.CountItems(), size.Width()+1-hspacing );
+	Spread( minwidth, maxwidth, width, weight, fChilds.CountItems(), size.Width()+1 );
 
 	BRect srect;
-	srect.top = fVSpacingTop;
-	srect.bottom = (size.bottom-size.top)-fVSpacingBottom;
-	srect.left = size.left + fHSpacingLeft;
+	srect.top = 0;
+	srect.bottom = (size.bottom-size.top);
+	srect.left = 0;
 	srect.right = 0;
 	for( int i=0; i<fChilds.CountItems(); i++ )
 	{
 		childinfo *ci = fChilds.ItemAt( i );
 		MinMax2 childminmax = ci->object->GetMinMaxSize();
+		ADJUSTRECT( ci, childminmax );
 
 		srect.right = srect.left + width[i]-1;
-		ci->object->SetSize( AlignRect(srect,childminmax,ci->align) );
 
-		srect.left = srect.right+1 + fHSpacingMid;
+		BRect sarect = AlignRect( srect, childminmax, ci->align );
+		DEADJUSTRECT( ci, sarect );
+		ci->object->SetSize( sarect );
+
+		srect.left = srect.right+1;
 	}
 }
 
 //-----------------------------------------------------------------------------
 
-/** \class damn::VSplit
+/** \class dle::VSplit
  * \ingroup DLE
  * A vertical splitter.
  *
@@ -185,19 +147,28 @@ void damn::HSplit::SetSize( const BRect &size )
 
 //-----------------------------------------------------------------------------
 
-damn::VSplit::VSplit( float spacing, align_t align ) :
-	Split( spacing, align )
+dle::VSplit::VSplit() :
+	BView( BRect(0,0,0,0), "group", B_FOLLOW_NONE, B_WILL_DRAW ),
+	Group( this )
+{
+	InnerSpacing( false );
+}
+
+dle::VSplit::~VSplit()
 {
 }
 
-damn::VSplit::~VSplit()
+void dle::VSplit::AttachedToWindow()
 {
+	SetViewColor( GetColor() );
 }
 
-damn::MinMax2 damn::VSplit::GetMinMaxSize()
+dle::MinMax2 dle::VSplit::GetMinMaxSize()
 {
+	ASSERT_WITH_MESSAGE( fChilds.CountItems(), "A VSplit container must not be empty" );
+
 	float minwidth = 0;
-	float maxwidth = 0;
+	float maxwidth = kMaxSize;
 	float *minheight = (float*)alloca( fChilds.CountItems() * sizeof(float) );
 	float *maxheight = (float*)alloca( fChilds.CountItems() * sizeof(float) );
 
@@ -205,26 +176,27 @@ damn::MinMax2 damn::VSplit::GetMinMaxSize()
 	{
 		childinfo *ci = fChilds.ItemAt( i );
 		MinMax2 childminmax = ci->object->GetMinMaxSize();
+		ASSERT( childminmax.horz.min <= childminmax.horz.max );
+		ADJUSTRECT( ci, childminmax );
+		
+		ASSERT( childminmax.horz.min <= childminmax.horz.max );
 
-		if( childminmax.hmin>minwidth ) minwidth = childminmax.hmin;
-		if( childminmax.hmax>maxwidth ) maxwidth = childminmax.hmax;
-		minheight[i] = childminmax.vmin;
-		maxheight[i] = childminmax.vmax;
+		if( childminmax.horz.min>minwidth ) minwidth = childminmax.horz.min;
+		if( childminmax.horz.max<maxwidth ) maxwidth = childminmax.horz.max;
+		minheight[i] = childminmax.vert.min;
+		maxheight[i] = childminmax.vert.max;
 	}
-	assert( maxwidth>=minwidth );
+	if( maxwidth < minwidth )
+		maxwidth = minwidth;
 
 	MinMax1	heightmm = SpreadCalcSize( minheight, maxheight, fChilds.CountItems() );
 
-	float vspacing = fVSpacingTop + max(fVSpacingMid*(fChilds.CountItems()-1),0.0f) + fVSpacingBottom;
-	heightmm.min += vspacing;
-	heightmm.max += vspacing;
-
-	return MinMax2( minwidth+fHSpacingLeft+fHSpacingRight,maxwidth+fHSpacingLeft+fHSpacingRight, heightmm.min,heightmm.max );
+	return MinMax2( minwidth,maxwidth, heightmm.min,heightmm.max );
 }
 
-void damn::VSplit::SetSize( const BRect &size )
+void dle::VSplit::SetSize( const BRect &size )
 {
-//	printf( "damn::VSplit::SetSize:\n" );
+//	printf( "dle::VSplit::SetSize:\n" );
 //	size.PrintToStream();
 	
 //	DEBUGGER( "Pling!" );
@@ -240,34 +212,33 @@ void damn::VSplit::SetSize( const BRect &size )
 	{
 		childinfo *ci = fChilds.ItemAt( i );
 		MinMax2 childminmax = ci->object->GetMinMaxSize();
+		ADJUSTRECT( ci, childminmax );
 
-		minheight[i] = childminmax.vmin;
-		maxheight[i] = childminmax.vmax;
+		minheight[i] = childminmax.vert.min;
+		maxheight[i] = childminmax.vert.max;
 		weight[i] = ci->weight;
 	}
 
-	float vspacing = fVSpacingTop + max(fVSpacingMid*(fChilds.CountItems()-1),0.0f) + fVSpacingBottom;
-
-	Spread( minheight, maxheight, height, weight, fChilds.CountItems(), size.Height()+1-vspacing );
+	Spread( minheight, maxheight, height, weight, fChilds.CountItems(), size.Height()+1 );
 
 	BRect srect;
-	srect.top = fVSpacingTop;
+	srect.top = 0;
 	srect.bottom = 0;
-	srect.left = fHSpacingLeft;
-	srect.right = (size.right-size.left)-fHSpacingRight;
-//	srect.top = size.top + fVSpacingTop;
-//	srect.bottom = 0;
-//	srect.left = fHSpacingLeft;
-//	srect.right = (size.right-size.left)-fHSpacingRight;
+	srect.left = 0;
+	srect.right = (size.right-size.left);
 	for( int i=0; i<fChilds.CountItems(); i++ )
 	{
 		childinfo *ci = fChilds.ItemAt( i );
 		MinMax2 childminmax = ci->object->GetMinMaxSize();
+		ADJUSTRECT( ci, childminmax );
 
 		srect.bottom = srect.top + height[i]-1;
-		ci->object->SetSize( AlignRect(srect,childminmax,ci->align) );
 
-		srect.top = srect.bottom+1 + fVSpacingMid;
+		BRect sarect = AlignRect( srect, childminmax, ci->align );
+		DEADJUSTRECT( ci, sarect );
+		ci->object->SetSize( sarect );
+
+		srect.top = srect.bottom+1;
 	}
 }
 

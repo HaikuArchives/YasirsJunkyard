@@ -26,58 +26,55 @@
  */
 
 //-----------------------------------------------------------------------------
+#include <stdio.h>
+#include <string.h>
 //-------------------------------------
 //-------------------------------------
-#include "../BMenuField.h"
+#include "../DebugView.h"
 //-----------------------------------------------------------------------------
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
+dle::DebugView::DebugView( const char *name, uchar r, uchar g, uchar b, uchar a ) :
+	BView( BRect(0,0,0,0), name, B_FOLLOW_NONE, B_WILL_DRAW|B_FULL_UPDATE_ON_RESIZE ),
 	Object( this )
 {
-	SetDivider( 0.0f );
+	fColor.red = r;
+	fColor.green = g;
+	fColor.blue = b;
+	fColor.alpha = a;
+
+//	fNeedInnerSpacing = false;
+
+	fName = name;
 }
 
-dle::BMenuField::~BMenuField()
+void dle::DebugView::AttachedToWindow()
 {
+	SetViewColor( B_TRANSPARENT_COLOR );
 }
 
-void dle::BMenuField::FrameResized( float new_width, float new_height )
+dle::MinMax2 dle::DebugView::GetMinMaxSize()
 {
-	ReLayout();
+	return MinMax2( 0,kMaxSize, 0,kMaxSize );
 }
 
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
+void dle::DebugView::SetSize( const BRect &size )
 {
-	float width;
-	float height;
-	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
-}
+//	printf( "dle::DebugView::SetSize:\n" );
+//	size.PrintToStream();
+//	Parent()->Bounds().PrintToStream();
 
-void dle::BMenuField::SetSize( const BRect &size )
-{
 	Object::SetSize( size );
 }
 
-//-----------------------------------------------------------------------------
-
-void dle::BMenuField::MouseDown( BPoint where )
+void dle::DebugView::Draw( BRect updateRect )
 {
-	if( SendMouseEventToParent() )
-		Parent()->MouseDown( ConvertToParent(where) );
-	else
-		::BMenuField::MouseDown( where );
-}
+	SetHighColor( fColor );
+	FillRect( Bounds() );
 
-void dle::BMenuField::MouseUp( BPoint where )
-{
-//	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
+	SetHighColor( 255, 0, 0 );
+	StrokeRect( Bounds() );
+
 }
 
 //-----------------------------------------------------------------------------
+

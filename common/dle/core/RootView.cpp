@@ -26,39 +26,41 @@
  */
 
 //-----------------------------------------------------------------------------
+#include <assert.h>
 #include <stdio.h>
 //-------------------------------------
 #include <interface/ScrollBar.h>
+#include <interface/Window.h>
 //-------------------------------------
-#include "../DamnLayoutEngine.h"
+#include "../RootView.h"
 //-----------------------------------------------------------------------------
 
-damn::RootView::RootView( BRect frame, uint32 resizeMask, uint32 flags ) :
+dle::RootView::RootView( BRect frame, uint32 resizeMask, uint32 flags ) :
 	BView( frame, "rootview", resizeMask, flags )
 {
 	fRoot = NULL;
 }
 
-damn::RootView::~RootView()
+dle::RootView::~RootView()
 {
 }
 		
-void damn::RootView::FrameResized( float /*new_width*/, float /*new_height*/ )
+void dle::RootView::FrameResized( float /*new_width*/, float /*new_height*/ )
 {
 	ResizeChild();
 }
 
-void damn::RootView::ReLayout()
+void dle::RootView::ReLayout()
 {
 	ResizeChild();
 }
 
-void damn::RootView::ResizeChild()
+void dle::RootView::ResizeChild()
 {
 //	DisableUpdates();
 	Window()->BeginViewTransaction();
 #if 0
-	damn::MinMax2 mm = fRoot->GetMinMaxSize();
+	dle::MinMax2 mm = fRoot->GetMinMaxSize();
 	BRect aligned = AlignRect( Bounds(), mm, CENTER );
 	fRoot->SetSize( aligned );
 //	if( !fRoot->GetView()->Window() ) // FIXME: revert!
@@ -71,7 +73,7 @@ void damn::RootView::ResizeChild()
 //	EnableUpdates();
 }
 
-void damn::RootView::AddObject( Object *object )
+void dle::RootView::AddObject( Object *object )
 {
 	assert( object != NULL );
 	assert( fRoot == NULL );
@@ -82,7 +84,7 @@ void damn::RootView::AddObject( Object *object )
 	AddChild( fRoot->GetView() );
 
 #if 0
-	damn::MinMax2 mm = fRoot->GetMinMaxSize();
+	dle::MinMax2 mm = fRoot->GetMinMaxSize();
 //	SetSizeLimits( mm.hmin-1, mm.hmax-1, mm.vmin-1, mm.vmax-1 );
 	
 	float view_width = Bounds().Width()+1;

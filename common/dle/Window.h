@@ -26,58 +26,39 @@
  */
 
 //-----------------------------------------------------------------------------
+#ifndef DAMN_DLE_WINDOW_H
+#define DAMN_DLE_WINDOW_H
+//-----------------------------------------------------------------------------
 //-------------------------------------
+#include <interface/Window.h>
 //-------------------------------------
-#include "../BMenuField.h"
+#include "Core.h"
 //-----------------------------------------------------------------------------
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
-	Object( this )
+namespace dle
 {
-	SetDivider( 0.0f );
-}
+	class Window : public BWindow, public Root
+	{
+	public:
+		Window( BRect frame, const char *title, window_look look, window_feel feel, uint32 flags, uint32 workspace = B_CURRENT_WORKSPACE );
+		virtual ~Window();
+		
+		void AddObject( Object *object );
+		bool RemoveObject( Object *object );
 
-dle::BMenuField::~BMenuField()
-{
-}
+		void ReLayout();
 
-void dle::BMenuField::FrameResized( float new_width, float new_height )
-{
-	ReLayout();
-}
+	protected:
+		void FrameResized( float new_width, float new_height );
 
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
-{
-	float width;
-	float height;
-	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
-}
-
-void dle::BMenuField::SetSize( const BRect &size )
-{
-	Object::SetSize( size );
+	private:
+		Object		*fRoot;
+		
+		bool		fHResizable;
+		bool		fVResizable;
+	};
 }
 
 //-----------------------------------------------------------------------------
+#endif
 
-void dle::BMenuField::MouseDown( BPoint where )
-{
-	if( SendMouseEventToParent() )
-		Parent()->MouseDown( ConvertToParent(where) );
-	else
-		::BMenuField::MouseDown( where );
-}
-
-void dle::BMenuField::MouseUp( BPoint where )
-{
-//	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
-}
-
-//-----------------------------------------------------------------------------

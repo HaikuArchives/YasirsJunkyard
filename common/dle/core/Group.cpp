@@ -26,58 +26,77 @@
  */
 
 //-----------------------------------------------------------------------------
+#include <stdio.h>
 //-------------------------------------
+#include <interface/View.h>
+#include <support/Debug.h>
 //-------------------------------------
-#include "../BMenuField.h"
+#include "../Group.h"
 //-----------------------------------------------------------------------------
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
-	Object( this )
-{
-	SetDivider( 0.0f );
-}
-
-dle::BMenuField::~BMenuField()
-{
-}
-
-void dle::BMenuField::FrameResized( float new_width, float new_height )
-{
-	ReLayout();
-}
-
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
-{
-	float width;
-	float height;
-	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
-}
-
-void dle::BMenuField::SetSize( const BRect &size )
-{
-	Object::SetSize( size );
-}
+/** \class dle::Group
+ * \ingroup DLE
+ * Base for Object layout containers.
+ *
+ */
 
 //-----------------------------------------------------------------------------
 
-void dle::BMenuField::MouseDown( BPoint where )
+dle::Group::Group( BView *view ) :
+	Object( view )
 {
-	if( SendMouseEventToParent() )
-		Parent()->MouseDown( ConvertToParent(where) );
-	else
-		::BMenuField::MouseDown( where );
+//	fHSpacing = 0;
+//	fVSpacing = 0;
+
+	fDefaultAlign = CENTER;
 }
 
-void dle::BMenuField::MouseUp( BPoint where )
+dle::Group::~Group()
 {
-//	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
+	for( int i=0; i<fChilds.CountItems(); i++ )
+		delete fChilds.ItemAtFast(i);
+}
+
+/*
+void dle::Group::SetSpacing( float spacing )
+{
+	fHSpacing = spacing;
+	fVSpacing = spacing;
+}
+
+void dle::Group::SetHSpacing( float spacing )
+{
+	fHSpacing = spacing;
+}
+
+void dle::Group::SetVSpacing( float spacing )
+{
+	fVSpacing = spacing;
+}
+*/
+
+void dle::Group::SetDefaultAlign( align_t align )
+{
+	fDefaultAlign = align;
+}
+
+void dle::Group::AddObject( Object *child, align_t align, float weight )
+{
+	ASSERT_WITH_MESSAGE( child!=NULL, "Illegal child object" );
+	ASSERT_WITH_MESSAGE( weight>=0.0f, "A child's weight must be greater that 0" );
+
+	childinfo *c = new childinfo;
+	c->object = child;
+//	c->objectisgroup = dynamic_cast<Group*>(c->object)!=NULL;
+	c->objectisgroup = !c->object->WantInnerSpacing();
+	c->weight = weight;
+	c->align = (align_t)(
+		((align&HMASK)==HDEFAULT) ? (fDefaultAlign&HMASK) : (align&HMASK) | 
+		((align&VMASK)==VDEFAULT) ? (fDefaultAlign&VMASK) : (align&VMASK));
+	
+	fChilds.AddItem( c );
+	fView->AddChild( child->GetView() );
 }
 
 //-----------------------------------------------------------------------------
+

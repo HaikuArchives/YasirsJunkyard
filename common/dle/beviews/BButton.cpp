@@ -27,21 +27,22 @@
 
 //-----------------------------------------------------------------------------
 //-------------------------------------
+#include <interface/Window.h>
 //-------------------------------------
-#include "../DamnLayoutEngine.h"
+#include "../BButton.h"
 //-----------------------------------------------------------------------------
 
-damn::BButton::BButton( const char *name, const char *label, BMessage *message, uint32 flags ) :
-	::BButton( BRect(0,0,0,0), name, label, message, B_FOLLOW_NONE, flags ),
+dle::BButton::BButton( const char *label, BMessage *message, uint32 flags ) :
+	::BButton( BRect(0,0,0,0), NULL, label, message, B_FOLLOW_NONE, flags ),
 	Object( this )
 {
 }
 
-damn::BButton::~BButton()
+dle::BButton::~BButton()
 {
 }
 
-damn::MinMax2 damn::BButton::GetMinMaxSize()
+dle::MinMax2 dle::BButton::GetMinMaxSize()
 {
 #if 0
 	float stringwidth = StringWidth( Label() );
@@ -54,13 +55,29 @@ damn::MinMax2 damn::BButton::GetMinMaxSize()
 	float width;
 	float height;
 	GetPreferredSize( &width, &height );
-	return MinMax2( width,width*2, height,height );
+	return MinMax2( width+1,(width+1)*2, height+1,height+1 );
 #endif
 }
 
-void damn::BButton::SetSize( const BRect &size )
+void dle::BButton::SetSize( const BRect &size )
 {
 	Object::SetSize( size );
+}
+
+//-----------------------------------------------------------------------------
+
+void dle::BButton::MouseDown( BPoint where )
+{
+	if( SendMouseEventToParent() )
+		Parent()->MouseDown( ConvertToParent(where) );
+	else
+		::BButton::MouseDown( where );
+}
+
+void dle::BButton::MouseUp( BPoint where )
+{
+//	msg->PrintToStream();
+	::BButton::MouseUp( where );
 }
 
 //-----------------------------------------------------------------------------

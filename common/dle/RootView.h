@@ -26,58 +26,37 @@
  */
 
 //-----------------------------------------------------------------------------
+#ifndef DAMN_DLE_ROOTVIEW_H
+#define DAMN_DLE_ROOTVIEW_H
+//-----------------------------------------------------------------------------
 //-------------------------------------
+#include <interface/View.h>
 //-------------------------------------
-#include "../BMenuField.h"
+#include "Core.h"
 //-----------------------------------------------------------------------------
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
-	Object( this )
+namespace dle
 {
-	SetDivider( 0.0f );
-}
+	class RootView : public BView, public Root
+	{
+	public:
+		RootView( BRect frame, uint32 resizeMask, uint32 flags );
+		virtual ~RootView();
+		
+		void AddObject( Object *object );
 
-dle::BMenuField::~BMenuField()
-{
-}
+		void ReLayout();
 
-void dle::BMenuField::FrameResized( float new_width, float new_height )
-{
-	ReLayout();
-}
+	protected:
+		void FrameResized( float new_width, float new_height );
 
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
-{
-	float width;
-	float height;
-	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
-}
+	private:
+		void ResizeChild();
 
-void dle::BMenuField::SetSize( const BRect &size )
-{
-	Object::SetSize( size );
+		Object		*fRoot;
+	};
 }
 
 //-----------------------------------------------------------------------------
+#endif
 
-void dle::BMenuField::MouseDown( BPoint where )
-{
-	if( SendMouseEventToParent() )
-		Parent()->MouseDown( ConvertToParent(where) );
-	else
-		::BMenuField::MouseDown( where );
-}
-
-void dle::BMenuField::MouseUp( BPoint where )
-{
-//	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
-}
-
-//-----------------------------------------------------------------------------

@@ -27,57 +27,78 @@
 
 //-----------------------------------------------------------------------------
 //-------------------------------------
+#include <app/Application.h>
 //-------------------------------------
-#include "../BMenuField.h"
+#include "dle/DebugView.h"
+#include "dle/Split.h"
+#include "dle/Window.h"
 //-----------------------------------------------------------------------------
 
-dle::BMenuField::BMenuField( BMenu *menu, uint32 flags ) :
-	::BMenuField( BRect(0,0,0,0), NULL, NULL, menu, false, (uint32)B_FOLLOW_NONE, flags|B_FRAME_EVENTS ),
-	Object( this )
+void DumpViewTree( BView *view )
 {
-	SetDivider( 0.0f );
-}
-
-dle::BMenuField::~BMenuField()
-{
-}
-
-void dle::BMenuField::FrameResized( float new_width, float new_height )
-{
-	ReLayout();
-}
-
-// The BMenuField resizes iteself, so the initial size does not work :(
-// If there just were a way to get the largest possible size of the BMenuField...
-dle::MinMax2 dle::BMenuField::GetMinMaxSize()
-{
-	float width;
-	float height;
-	GetPreferredSize( &width, &height );
-//	printf( "BMenuField:GetMinMaxSize() %p: %f %f\n", this, width, height );
-//	ASSERT( width == 0 );
-	return MinMax2( width+1,width+1, height+1,height+1 );
-}
-
-void dle::BMenuField::SetSize( const BRect &size )
-{
-	Object::SetSize( size );
+	
 }
 
 //-----------------------------------------------------------------------------
 
-void dle::BMenuField::MouseDown( BPoint where )
+class TestWindow : public dle::Window
 {
-	if( SendMouseEventToParent() )
-		Parent()->MouseDown( ConvertToParent(where) );
-	else
-		::BMenuField::MouseDown( where );
-}
+public:
+	TestWindow() : dle::Window( BRect(100,100,199,199), "DLE Test1", B_TITLED_WINDOW_LOOK, B_NORMAL_WINDOW_FEEL, 0 )
+	{
+		Show();
+	}
 
-void dle::BMenuField::MouseUp( BPoint where )
+	~TestWindow()
+	{
+	}
+	
+	bool QuitRequested()
+	{
+		be_app->PostMessage( B_QUIT_REQUESTED );
+		return true;
+	}
+private:
+};
+
+//-----------------------------------------------------------------------------
+
+int main()
 {
-//	msg->PrintToStream();
-	::BMenuField::MouseUp( where );
+	BApplication app( "application/x-vnd.dleRednex-DLESpacingLayoutTest" );
+	
+	TestWindow *win = new TestWindow;
+	win->Lock();
+
+#if 1
+	dle::VSplit *vs = new dle::VSplit;
+	vs->SetInner( 1 );
+	for( int i=0; i<4; i++ )
+	{
+		dle::HSplit *hs = new dle::HSplit;
+		for( int j=0; j<8; j++ )
+		{
+			dle::VSplit *vs = new dle::VSplit;
+			for( int k=0; k<4; k++ )
+			{
+				dle::DebugView *dv = new dle::DebugView( "", 0, 0, 0 );
+				vs->AddObject( dv, 1.0f );
+			}
+			hs->AddObject( vs, 1.0f );
+		}
+		vs->AddObject( hs, 1.0f );
+	}
+	win->AddObject( vs );
+#endif
+
+	win->Unlock();
+	
+	app.Run();	
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
+
+
+
+
