@@ -1,0 +1,9 @@
+gendoc ::
+	(
+		palmalbum_doc.html^htmldoc:
+	)
+{
+	<<<
+	>>>
+}
+

@@ -11,6 +11,8 @@ html.zip -> htmldoczip:
 		../translators/hsiraw/documentation/hsiraw.html^html:
 		../translators/hsiraw/documentation/hsirawconfig.png
 
+		../translators/palmalbum/documentation/palmalbum.html^html:
+
 		../kerneldrivers/optrex/documentation/optrex.html^html:
 		../kerneldrivers/optrex/documentation/^image:jpeg
 
@@ -18,6 +20,7 @@ html.zip -> htmldoczip:
 		../kerneldrivers/w8378x/documentation/^image:jpeg
 
 		../kerneldrivers/supersmartcard/documentation/ssc.html^html:
+
 
 		../utils/optrexcpumon/documentation/optrexcpumon.html^html:
 		../utils/optrexcpumon/documentation/^image:jpeg
@@ -41,6 +44,9 @@ php.zip -> phpdoczip:
 		../translators/hsiraw/documentation/hsiraw.php3
 		../translators/hsiraw/documentation/hsirawconfig.png
 
+		../translators/palmalbum/documentation/palmalbum.php3
+
+
 		../kerneldrivers/optrex/documentation/optrex.php3
 		../kerneldrivers/optrex/documentation/^image:jpeg
 
@@ -48,6 +54,7 @@ php.zip -> phpdoczip:
 		../kerneldrivers/w8378x/documentation/^image:jpeg
 
 		../kerneldrivers/supersmartcard/documentation/ssc.php3
+
 
 		../utils/optrexcpumon/documentation/optrexcpumon.php3
 		../utils/optrexcpumon/documentation/^image:jpeg

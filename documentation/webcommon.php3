@@ -186,9 +186,10 @@ function makepage( $title, $page )
 				<?addtophead( "Translators" )?>
 					<?addsubentry( "AmigaIcon", "amigaicon" )?>
 					<?addsubentry( "HsiRaw", "hsiraw" )?>
+					<?addsubentry( "Palm Album", "palmalbum" )?>
 				<?addtopend()?>
 
-				<?addtophead( "Kernel drivers" )?>
+				<?addtophead( "Kernel&nbsp;drivers" )?>
 					<?addsubentry( "Optrex", "optrex" )?>
 					<?addsubentry( "W8378x", "w8378x" )?>
 					<?addsubentry( "SuperSmartCard", "ssc" )?>

@@ -130,9 +130,9 @@ accumulate executable: (link)
 	RSRCS = $(filter \.rsrc$, $(_sources_))
 
 	<<<
-		$(LD) -o $(0) $(OBJS) $(LDFLAGS)
-		sh -c "if [ '$(RSRCS)' != '' ]; then $(XRES) -o $(0) $(RSRCS); fi"
-		$(MIMESET) $(0)
+		sh -c "$(LD) -o $(0) $(OBJS) $(LDFLAGS) && \
+			if [ '$(RSRCS)' != '' ]; then $(XRES) -o $(0) $(RSRCS); fi && \
+			$(MIMESET) $(0)"
 	>>>
 }
 
