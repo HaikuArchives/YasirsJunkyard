@@ -1,0 +1,9 @@
+%all! == <<
+	%SimpleMediaConsumerTest
+
+%SimpleMediaConsumerTest == SimpleMediaConsumerTest.cpp \
+	+inc_sp=(../..) \
+	+lib=(..%media.a) -lbe -lmedia \
+	+optimize=3 \
+	:exe
+

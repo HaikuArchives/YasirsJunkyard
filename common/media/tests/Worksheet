@@ -1,0 +1,38 @@
+cd /junkyard/common/misc/tests ; . ../../../setupenv.sh
+--------------------------------------------------------------------------------
+bake bin/SimpleMediaConsumerTest
+--------------------------------------------------------------------------------
+bake bin/SimpleMediaConsumerTest && ../../../build/BeOS-BePC/beos_intel_gnupro/common/misc/tests/bin/SimpleMediaConsumerTest
+--------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------
+bake install && ShowImage testimages/1_31
+DataTranslations &
+--------------------------------------------------------------------------------
+translate --list
+translate '/boot/home/Graphics/Screenshots/Windows Bugs/Write Failed.png' /tmp/delme bits
+translate ~/BitmapClip /tmp/delme bits
+translate /tmp/delme /tmp/delme.3.prc ATGC
+ShowImage /tmp/delme.3.prc
+pilot-xfer -i /tmp/delme.3.prc
+--------------------------------------------------------------------------------
+export PILOTPORT=/dev/ports/serial2
+export PILOTRATE=115200
+
+rm -r ../../build #clean
+bake --depends install
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+rm -r ../../build #clean
+devr45
+bake binarc
+devcur
+ftp download.sourceforge.net << EOF
+anonymous
+jesper@funcom.com
+cd incoming
+dir
+put _x86.zip
+EOF

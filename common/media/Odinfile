@@ -1,0 +1,6 @@
+%media.a == %media.sm +inc_sp=(../../common) +optimize=3 :a
+%media_dbg.a == %media.sm +inc_sp=(../../common) +debug :a
+
+%media.sm == << EOF
+	SimpleVideoConsumer.cpp
+EOF
