@@ -34,10 +34,11 @@
 #include <support/ByteOrder.h>
 #include <support/DataIO.h>
 //-------------------------------------
-#include <pi-file.h>
+#include "pi-file.h"
+
 #include "gfx/TranslatorUtils.h"
 #include "misc/AutoPtr.h"
-#include "misc/StorageUtils.h"
+#include "storage/Utils.h"
 #include "PalmAlbumTranslator.h"
 //-----------------------------------------------------------------------------
 
@@ -67,7 +68,7 @@ status_t PalmAlbum2Bitmap( BPositionIO *instream, BPositionIO *outstream )
 	const char *tmpfilename = tmpnam(NULL);
 	
 	BFile tmpfile( tmpfilename, B_READ_WRITE|B_CREATE_FILE|B_ERASE_FILE );
-	damn::Copy( instream, &tmpfile );
+	damn::Copy_( &tmpfile, instream );
 	tmpfile.Unset();
 
 	struct pi_file *pilotfile = pi_file_open( const_cast<char*>(tmpfilename) );

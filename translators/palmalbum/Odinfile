@@ -1,0 +1,45 @@
+%install! == <<
+	%PalmAlbumTranslator > /boot/home/config/add-ons/Translators/PalmAlbumTranslator
+
+%PalmAlbumTranslator == %PalmAlbumTranslator.c.sm \
+	+inc_sp=(../../common) \
+	+lib=(../../common/dle%dle.a) (../../common/gfx%gfx.a) (../../common/misc%misc.a) (../../common/storage%storage.a) -lbe -lpisock \
+	+optimize=3 \
+	+resource=(PalmAlbumTranslatorX86.rsrc) \
+	:exe
+
+#	+c_flags=-include\ Version.h \
+
+%PalmAlbumTranslator.c.sm == <<
+	PalmAlbumTranslator.cpp
+	PalmAlbumRead.cpp
+	PalmAlbumWrite.cpp
+
+
+# #Version.h == version.txt +cmd='sed \'s/\\([0-9]*\\)\.\\([0-9]\\)*\.\\([0-9]\\)/\
+# #\\/\\/ Machine generated, do not editX#\
+# #define VERSION \"\\1.\\2.\\3\"X#\
+# #define VERSION_MAJOR \\1X#\
+# #define VERSION_MINOR \\2X#\
+# #define VERSION_REVISION \\3X\
+# #/\' | tr X \\\\n' :stdout
+# 
+Version.h == <<
+// Machine generated, do not edit
+#define VERSION 0.1.0
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 1
+#define VERSION_REVISION 0
+
+# 
+# 
+# 
+# %makezip! == <<
+# 	AMIGAICONVERSION = !0.6.1
+# 	%AmigaIcon.zip.sm +virtdir='AmigaIcon_'$AMIGAICONVERSION :zip > 'AmigaIcon_'$AMIGAICONVERSION'.zip'
+# 
+# %AmigaIcon.zip.sm == <<
+# 	AmigaIconTranslator
+# 	documentation%amigaicon_doc.html
+# 	documentation/amigaiconconfig.png
+
