@@ -1,5 +1,12 @@
-BUILDING:
+Yasir's Junkyard
+============================
+A collection of small BeOS programs and plugins.
 
+Originally from: http://sourceforge.net/projects/yasirsjunkyard/  
+Website: http://yasirsjunkyard.sourceforge.net/  
+License: BSD
+
+BUILDING:
 	First you must install Bake, you can get it here:
 	http://www.bebits.com/app/734
 
@@ -17,11 +24,9 @@ BUILDING:
 		
 
 DOCUMENTATION:
-
 	If you have php* installed, you can build, and read it by running
 	"bake gfx/textimage/install" and
 	"bake documentation/readhtml"
 	
 	php* :The "Beta 3 - beos-3" version of php that is on www.bebits.com
 	has several bugs and will not work...
-
